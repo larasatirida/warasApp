@@ -38,9 +38,9 @@ class MoodCheckInWorker(
             .setContentText("Yuk check-in mood sebelum tidur")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .addAction(buildMoodAction("Senang", 5, 1))
+            .addAction(buildMoodAction("Baik", 5, 1))
             .addAction(buildMoodAction("Biasa", 3, 2))
-            .addAction(buildMoodAction("Lelah", 1, 3))
+            .addAction(buildMoodAction("Buruk", 1, 3))
             .build()
 
         val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

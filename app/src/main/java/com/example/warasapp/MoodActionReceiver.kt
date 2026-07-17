@@ -4,9 +4,12 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 class MoodActionReceiver : BroadcastReceiver() {
 
@@ -28,5 +31,10 @@ class MoodActionReceiver : BroadcastReceiver() {
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(1001)
+
+        val fisikRequest = OneTimeWorkRequestBuilder<FisikCheckInWorker>()
+            .setInitialDelay(2, TimeUnit.SECONDS)
+            .build()
+        WorkManager.getInstance(context).enqueue(fisikRequest)
     }
 }

@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "839310180011",
+    "project_id": "waras-dev",
+    "storage_bucket": "waras-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839310180011:android:7b2be29ac0b92a20ebc1ee",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839310180011:android:44f809ef8213deefebc1ee",
+        "android_client_info": {
+          "package_name": "com.example.waras"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839310180011:android:693dd8c3d00ba8fdebc1ee",
+        "android_client_info": {
+          "package_name": "com.example.warasapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

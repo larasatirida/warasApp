@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">warasApp</string>
+    <string name="app_name">warass</string>
+    <string name="lihat_riwayat_history">Lihat Riwayat / History</string>
+    <string name="selamat_datang">Selamat Datang!</string>
+    <string name="aplikasi_warass">Aplikasi Warass</string>
+    <string name="selamat_pagi">Selamat pagi,</string>
+    <string name="budi_santoso">Budi Santoso 👋</string>
 </resources>

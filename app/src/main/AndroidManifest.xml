@@ -31,6 +31,9 @@
             android:name=".MainActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".InputJadwalActivity"
+            android:exported="false" />
 
     </application>
 

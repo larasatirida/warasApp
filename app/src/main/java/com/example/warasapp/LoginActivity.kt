@@ -36,6 +36,8 @@ class LoginActivity : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, InputJadwalActivity::class.java))
+                    finish()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(this, "Login gagal: ${e.message}", Toast.LENGTH_SHORT).show()

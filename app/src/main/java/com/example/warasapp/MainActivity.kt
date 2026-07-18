@@ -47,8 +47,10 @@ class MainActivity : AppCompatActivity() {
 
         val moodPending = NotifPrefsHelper.isPending(this, "mood")
         val fisikPending = NotifPrefsHelper.isPending(this, "fisik")
+        val moodAnswered = NotifPrefsHelper.isAnsweredToday(this, "mood")
+        val fisikAnswered = NotifPrefsHelper.isAnsweredToday(this, "fisik")
 
-        if (!moodPending && !fisikPending) {
+        if (!moodPending && !fisikPending && !moodAnswered && !fisikAnswered) {
             val exitAppRequest = OneTimeWorkRequestBuilder<MoodCheckInWorker>()
                 .setInitialDelay(15, TimeUnit.SECONDS)
                 .build()

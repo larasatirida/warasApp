@@ -33,6 +33,7 @@ class MoodActionReceiver : BroadcastReceiver() {
             .add(moodLog)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        NotifPrefsHelper.setAnsweredToday(context, "mood")
         manager.cancel(1001)
 
         val fisikRequest = OneTimeWorkRequestBuilder<FisikCheckInWorker>()

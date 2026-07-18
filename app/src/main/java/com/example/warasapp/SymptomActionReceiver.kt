@@ -28,6 +28,7 @@ class SymptomActionReceiver : BroadcastReceiver() {
 
         // Hilangkan notifikasi kendala fisik (misal ID-nya 1002)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        NotifPrefsHelper.setAnsweredToday(context, "fisik")
         manager.cancel(1002)
     }
 }

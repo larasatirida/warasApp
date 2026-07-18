@@ -34,4 +34,19 @@ object NotifPrefsHelper {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getString("last_mission_notified", null)
     }
+
+    fun setAnsweredToday(context: Context, type: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            .format(java.util.Date())
+        prefs.edit().putString("${type}_answered_date", today).apply()
+    }
+
+    fun isAnsweredToday(context: Context, type: String): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            .format(java.util.Date())
+        val savedDate = prefs.getString("${type}_answered_date", null)
+        return savedDate == today
+    }
 }

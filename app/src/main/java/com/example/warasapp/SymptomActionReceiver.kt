@@ -4,12 +4,15 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Date
 
 class SymptomActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        NotifPrefsHelper.setPending(context, "fisik", false)
+        WorkManager.getInstance(context).cancelUniqueWork("escalation_fisik")
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous_test"
 
         // Simpan data kosong / no symptom sesuai skema tim (kendala = array kosong)

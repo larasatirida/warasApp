@@ -11,15 +11,29 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import android.os.Build
+import android.app.NotificationManager
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestNotificationPermission()
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        if (intent.getStringExtra("OPEN_FRAGMENT") == "SYMPTOM_PAGE") {
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.cancel(1002)
+            NotifPrefsHelper.setPending(this, "fisik", false)
+            WorkManager.getInstance(this).cancelUniqueWork("escalation_fisik")
+        }
+
         // Jalankan Penjadwalan Rutin di Jam Spesifik
         scheduleDailyNotifications()
+        scheduleMissionCheck()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -30,11 +44,29 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        // Saat aplikasi tidak terlihat / ditutup, 15 detik kemudian kirim notif mood
-        val exitAppRequest = OneTimeWorkRequestBuilder<MoodCheckInWorker>()
-            .setInitialDelay(15, TimeUnit.SECONDS)
-            .build()
-        WorkManager.getInstance(this).enqueue(exitAppRequest)
+
+        val moodPending = NotifPrefsHelper.isPending(this, "mood")
+        val fisikPending = NotifPrefsHelper.isPending(this, "fisik")
+
+        if (!moodPending && !fisikPending) {
+            val exitAppRequest = OneTimeWorkRequestBuilder<MoodCheckInWorker>()
+                .setInitialDelay(15, TimeUnit.SECONDS)
+                .build()
+            WorkManager.getInstance(this).enqueue(exitAppRequest)
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    101
+                )
+            }
+        }
     }
     
     private fun scheduleDailyNotifications() {
@@ -60,6 +92,13 @@ class MainActivity : AppCompatActivity() {
             .setInitialDelay(delay20, TimeUnit.MILLISECONDS)
             .build()
         workManager.enqueueUniquePeriodicWork("Mood_20PM", ExistingPeriodicWorkPolicy.KEEP, request20)
+    }
+
+    private fun scheduleMissionCheck() {
+        val request = PeriodicWorkRequestBuilder<MissionCheckWorker>(30, TimeUnit.MINUTES)
+            .build()
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork("mission_check", ExistingPeriodicWorkPolicy.KEEP, request)
     }
 
     // Fungsi pembantu untuk menghitung sisa waktu (milidetik) menuju jam target

@@ -4,9 +4,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import androidx.work.WorkManager
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import java.util.concurrent.TimeUnit
 
 class FisikCheckInWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
@@ -15,13 +17,21 @@ class FisikCheckInWorker(context: Context, params: WorkerParameters) : Coroutine
         return Result.success()
     }
 
+    private fun scheduleEscalation(type: String) {
+        val request = androidx.work.OneTimeWorkRequestBuilder<EscalationWorker>()
+            .setInitialDelay(20, TimeUnit.MINUTES)
+            .setInputData(androidx.work.workDataOf("type" to type))
+            .build()
+        WorkManager.getInstance(applicationContext)
+            .enqueueUniqueWork("escalation_$type", androidx.work.ExistingWorkPolicy.REPLACE, request)
+    }
+
     private fun showNotification() {
         // Intent membuka aplikasi / Halaman Detail Gejala (SymptomDetailActivity harus dibuat dulu/minta Orang D/A)
         val intentYa = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("OPEN_FRAGMENT", "SYMPTOM_PAGE") // Penanda untuk navigasi internal app
+            putExtra("OPEN_FRAGMENT", "SYMPTOM_PAGE")
         }
-
         val pendingIntentYa = PendingIntent.getActivity(
             applicationContext, 0, intentYa,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
@@ -45,6 +55,9 @@ class FisikCheckInWorker(context: Context, params: WorkerParameters) : Coroutine
             .build()
 
         val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        NotifPrefsHelper.setPending(applicationContext, "fisik", true)
+        NotifPrefsHelper.setAttempt(applicationContext, "fisik", 0)
+        scheduleEscalation("fisik")
         manager.notify(1002, notification) // ID 1002 berbeda dengan mood
     }
 }

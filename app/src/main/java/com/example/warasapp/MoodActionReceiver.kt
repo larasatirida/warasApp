@@ -17,6 +17,9 @@ class MoodActionReceiver : BroadcastReceiver() {
         val moodValue = intent.getIntExtra("MOOD_VALUE", -1)
         if (moodValue == -1) return
 
+        NotifPrefsHelper.setPending(context, "mood", false)
+        WorkManager.getInstance(context).cancelUniqueWork("escalation_mood")
+
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous_test"
 
         val moodLog = hashMapOf(

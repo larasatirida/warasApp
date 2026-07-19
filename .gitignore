@@ -1,15 +1,35 @@
+# IDE
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.classpath
+.project
+.settings/
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Gradle
+.gradle/
+build/
+app/build/
+gradle.properties.user
+
+# Local configuration
 local.properties
+
+# Secrets
+# app/google-services.json
+
+# Log & Captures
+/captures
+*.log
+
+# System
+.DS_Store
+Thumbs.db
+
+# Kotlin
+.kotlin/

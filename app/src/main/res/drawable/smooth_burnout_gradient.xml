@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="0"
+        android:startColor="#4ADE80"
+        android:centerColor="#FACC15"
+        android:endColor="#FF6B6B" />
+    <!-- Ini yang bikin ujungnya jadi bulat (rounded) -->
+    <corners android:radius="4dp" />
+</shape>

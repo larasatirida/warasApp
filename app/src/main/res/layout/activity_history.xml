@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAF9F4"
+    android:fitsSystemWindows="true"
+    tools:context=".HistoryActivity">
+
+    <ScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- 1. HEADER -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Check-in Harian"
+                android:textColor="#1A1A2E"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDateSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="20dp"
+                android:text="Kamis, 10 Jul 2025 · Bagaimana kondisimu?"
+                android:textColor="#999999"
+                android:textSize="13sp" />
+
+            <!-- 2. CARD MOOD HARI INI -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:id="@+id/moodRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="3"
+                    android:padding="12dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical">
+
+                    <!-- Baik -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/moodBaik"
+                        android:layout_width="0dp"
+                        android:layout_height="110dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:checkable="true"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@color/mood_bg_baik"
+                        app:strokeColor="@color/mood_stroke_baik"
+                        app:strokeWidth="2dp"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="0dp"
+                        app:rippleColor="@android:color/transparent"
+                        app:checkedIcon="@null">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="2dp"
+                            android:duplicateParentState="true">
+                            <ImageView
+                                android:id="@+id/imgBaik"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:padding="2dp"
+                                app:srcCompat="@drawable/ic_baik"/>
+                            <TextView
+                                android:id="@+id/txtBaik"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Baik"
+                                android:duplicateParentState="true"
+                                android:textColor="@color/mood_text_baik"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="8dp"
+                                android:gravity="center"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Biasa -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/moodBiasa"
+                        android:layout_width="0dp"
+                        android:layout_height="110dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:checkable="true"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@color/mood_bg_biasa"
+                        app:strokeColor="@color/mood_stroke_biasa"
+                        app:strokeWidth="2dp"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="0dp"
+                        app:rippleColor="@android:color/transparent"
+                        app:checkedIcon="@null">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="2dp"
+                            android:duplicateParentState="true">
+                            <ImageView
+                                android:id="@+id/imgBiasa"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:padding="2dp"
+                                app:srcCompat="@drawable/ic_biasa"/>
+                            <TextView
+                                android:id="@+id/txtBiasa"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Biasa"
+                                android:duplicateParentState="true"
+                                android:textColor="@color/mood_text_biasa"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="8dp"
+                                android:gravity="center"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Buruk -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/moodBuruk"
+                        android:layout_width="0dp"
+                        android:layout_height="110dp"
+                        android:layout_weight="1"
+                        android:layout_margin="4dp"
+                        android:checkable="true"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:cardBackgroundColor="@color/mood_bg_berat"
+                        app:strokeColor="@color/mood_stroke_berat"
+                        app:strokeWidth="2dp"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="0dp"
+                        app:rippleColor="@android:color/transparent"
+                        app:checkedIcon="@null">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="2dp"
+                            android:duplicateParentState="true">
+                            <ImageView
+                                android:id="@+id/imgBuruk"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:padding="2dp"
+                                app:srcCompat="@drawable/ic_buruk"/>
+                            <TextView
+                                android:id="@+id/txtBuruk"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Buruk"
+                                android:duplicateParentState="true"
+                                android:textColor="@color/mood_text_berat"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="8dp"
+                                android:gravity="center"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>            </androidx.cardview.widget.CardView>
+            <!-- 3. CARD KENDALA FISIK & MENTAL -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:text="KENDALA FISIK &amp; MENTAL"
+                        android:textColor="#CCCCCC"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupKendala"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:chipSpacingHorizontal="8dp"
+                        app:chipSpacingVertical="8dp">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipSakitKepala"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sakit kepala"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipNyeriPunggung"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nyeri punggung"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipMataLelah"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mata lelah"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipSulitTidur"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sulit tidur"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipKurangMakan"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kurang nafsu makan"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipMudahMarah"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mudah marah"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipSulitFokus"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sulit fokus"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipKelelahanEkstrem"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kelelahan ekstrem"
+                            android:textSize="12sp"
+                            android:checkable="true"
+                            android:textColor="@android:color/black"
+                            app:chipBackgroundColor="#F5F5F0"
+                            app:chipStrokeWidth="0dp" />
+                    </com.google.android.material.chip.ChipGroup>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 4. CARD CATATAN TAMBAHAN -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:text="CATATAN TAMBAHAN"
+                        android:textColor="#CCCCCC"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+                    <EditText
+                        android:id="@+id/etCatatan"
+                        android:layout_width="match_parent"
+                        android:layout_height="90dp"
+                        android:background="@android:color/transparent"
+                        android:gravity="top|start"
+                        android:hint="Ceritakan lebih lanjut tentang kondisimu hari ini..."
+                        android:textColorHint="#BBBBBB"
+                        android:inputType="textMultiLine"
+                        android:textSize="13sp"
+                        android:textColor="#1A1A2E" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 5. TOMBOL SIMPAN -->
+            <Button
+                android:id="@+id/btnSimpanCheckIn"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginBottom="36dp"
+                android:backgroundTint="#1A1A2E"
+                android:text="Simpan Check-in"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="16dp" />
+            <!-- 6. RIWAYAT CHECK-IN -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="RIWAYAT CHECK-IN"
+                android:textColor="#CCCCCC"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
+
+            <LinearLayout
+                android:id="@+id/historyContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 7. BOTTOM NAVIGATION BAR -->
+    <LinearLayout
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="#FFFFFF"
+        android:orientation="horizontal"
+        android:elevation="8dp"
+        android:weightSum="5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/navBeranda"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_beranda" android:contentDescription="Beranda"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Beranda" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navJadwal"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_jadwal" android:contentDescription="Jadwal"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jadwal" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navCheckIn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_bubble" android:contentDescription="Check-in"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Check-in" android:textColor="#1A1A2E" android:textStyle="bold" android:textSize="10sp" android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navMisi"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_mission" android:contentDescription="Misi"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Misi" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/navProfil"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_profile" android:contentDescription="Profil"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Profil" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

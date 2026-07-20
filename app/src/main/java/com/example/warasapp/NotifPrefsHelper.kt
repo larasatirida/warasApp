@@ -49,4 +49,14 @@ object NotifPrefsHelper {
         val savedDate = prefs.getString("${type}_answered_date", null)
         return savedDate == today
     }
+
+    fun setNotifEnabled(context: Context, type: String, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("${type}_enabled", enabled).apply()
+    }
+
+    fun isNotifEnabled(context: Context, type: String): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean("${type}_enabled", true) // default ON
+    }
 }

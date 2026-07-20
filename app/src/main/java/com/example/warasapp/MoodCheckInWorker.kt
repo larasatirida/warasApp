@@ -16,7 +16,9 @@ class MoodCheckInWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        android.util.Log.d("WarasDebug", "MoodCheckInWorker jalan!")
+        if (!NotifPrefsHelper.isNotifEnabled(applicationContext, "checkin_harian")) {
+            return Result.success() // toggle mati, skip aja
+        }
         showNotification()
         return Result.success()
     }

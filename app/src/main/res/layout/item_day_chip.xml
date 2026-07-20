@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_marginEnd="10dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:minWidth="56dp"
+    android:background="@drawable/bg_day_chip"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/tvDayName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sen"
+        android:textSize="12sp"
+        android:textColor="#9B9FA8" />
+
+    <TextView
+        android:id="@+id/tvDayNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="7"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#1A1C2E" />
+
+</LinearLayout>

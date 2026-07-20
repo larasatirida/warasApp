@@ -1,0 +1,15 @@
+*   [33md445873[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mexperiment-gabung-kode[m[33m)[m Merge branch 'feature/scoring-mission' into experiment-gabung-kode
+[31m|[m[32m\[m  
+[31m|[m * [33m7fb70b3[m[33m ([m[1;31morigin/feature/scoring-mission[m[33m, [m[1;32mfeature/scoring-mission[m[33m)[m feat: logic done
+* [32m|[m [33ma565498[m Simpan perubahan sementara sebelum merge
+* [32m|[m [33m775720e[m[33m ([m[1;31morigin/develop[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mdevelop[m[33m)[m Revert "Merge pull request #2 from larasatirida/feature/auth-input-jadwal"
+* [32m|[m [33m0a5963b[m chore: hapus folder .idea dari branch develop
+* [32m|[m   [33m016f4cf[m Merge pull request #2 from larasatirida/feature/auth-input-jadwal
+[32m|[m[34m\[m [32m\[m  
+[32m|[m [34m|[m[32m/[m  
+[32m|[m[32m/[m[34m|[m   
+[32m|[m * [33ma3ec185[m[33m ([m[1;31morigin/feature/auth-input-jadwal[m[33m)[m Bikin Input Jadwal screen, simpan ke Firestore, sambung dari Login
+[32m|[m * [33ma87ad1e[m Ganti ke google-services.json project Firebase bersama
+[32m|[m * [33m9c6eb00[m Setup Firebase Auth, Login dan Register screen berhasil jalan
+[32m|[m[32m/[m  
+[32m|[m * [33mb509ada[m[33m ([m[1;31morigin/feature/notifikasi[m[33m)[m Fix: notif tidak muncul ulang jika mood/fisik sudah diisi hari ini

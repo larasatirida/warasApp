@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Reusable bottom navigation bar.
+  Include this in Dashboard, Jadwal, and Check-in layouts with:
+
+  <include layout="@layout/layout_bottom_nav" />
+
+  Then in each Activity, call BottomNavHelper.setup(this, "jadwal")  <- or "dashboard" / "checkin"
+  See BottomNavHelper.kt for the click-routing logic.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bottomNav"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:orientation="horizontal"
+    android:background="#FFFFFF"
+    android:elevation="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:id="@+id/navDashboard"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/iconDashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏠"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/labelDashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Dashboard"
+            android:textSize="11sp"
+            android:textColor="#9B9FA8" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navJadwal"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/iconJadwal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🗓️"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/labelJadwal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Jadwal"
+            android:textSize="11sp"
+            android:textColor="#9B9FA8" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navCheckin"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/iconCheckin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✅"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/labelCheckin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Check-in"
+            android:textSize="11sp"
+            android:textColor="#9B9FA8" />
+    </LinearLayout>
+
+</LinearLayout>

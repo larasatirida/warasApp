@@ -101,6 +101,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "839310180011-gg2krjdikhuvmnp0jbhp9fa2jbuausb6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.warasapp",
+            "certificate_hash": "1923bda56c6432ec684b1ba3f017961a6aed0867"
+          }
+        },
+        {
           "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
           "client_type": 3
         }

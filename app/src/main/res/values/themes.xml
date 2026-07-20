@@ -5,5 +5,5 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.Warass" parent="Base.Theme.WarasApp" />
+    <style name="Theme.WarasApp" parent="Base.Theme.WarasApp" />
 </resources>

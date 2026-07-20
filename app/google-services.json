@@ -12,7 +12,12 @@
           "package_name": "com.example.myapplication"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -31,7 +41,12 @@
           "package_name": "com.example.waras"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
@@ -39,7 +54,41 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839310180011:android:fed98f262c6b8fc4ebc1ee",
+        "android_client_info": {
+          "package_name": "com.example.warasApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -50,7 +99,20 @@
           "package_name": "com.example.warasapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "839310180011-gg2krjdikhuvmnp0jbhp9fa2jbuausb6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.warasapp",
+            "certificate_hash": "1923bda56c6432ec684b1ba3f017961a6aed0867"
+          }
+        },
+        {
+          "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBd0z2xvjOa89Jm6kSFM4GK6NiYZyW6tKM"
@@ -58,7 +120,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

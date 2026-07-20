@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottomNavigation"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:background="#FFFFFF"
+    android:orientation="horizontal"
+    android:elevation="8dp"
+    android:weightSum="5">
+
+    <LinearLayout
+        android:id="@+id/navBeranda"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_beranda" android:contentDescription="Beranda"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Beranda" android:textColor="#1A1A2E" android:textSize="10sp" android:textStyle="bold" android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navJadwal"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_jadwal" android:contentDescription="Jadwal"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jadwal" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navCheckIn"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_bubble" android:contentDescription="Check-in"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Check-in" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navMisi"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_mission" android:contentDescription="Misi"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Misi" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navProfil"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_profile" android:contentDescription="Profil"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Profil" android:textColor="#AAAAAA" android:textSize="10sp" android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+</LinearLayout>

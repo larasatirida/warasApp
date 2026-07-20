@@ -23,6 +23,7 @@ class RegisterActivity : AppCompatActivity() {
         val etConfirmPassword: EditText = findViewById(R.id.etConfirmPassword)
         val btnRegister: Button = findViewById(R.id.btnRegister)
         val tvGoToLogin: TextView = findViewById(R.id.tvGoToLogin)
+        val tvBack: TextView = findViewById(R.id.tvBack)
 
         btnRegister.setOnClickListener {
             val email = etEmail.text.toString().trim()
@@ -55,6 +56,10 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         tvGoToLogin.setOnClickListener {
+            finish()
+        }
+
+        tvBack.setOnClickListener {
             finish()
         }
     }

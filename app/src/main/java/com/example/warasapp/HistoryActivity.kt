@@ -1,8 +1,6 @@
 package com.example.warasapp
 
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.Query
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -22,6 +20,9 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,7 +32,7 @@ class HistoryActivity : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
-    private var selectedMoodValue: Int? = null // 1=Buruk, 2=Biasa, 3=Baik
+    private var selectedMoodValue: Int? = null
 
     private data class MoodOption(val label: String, val value: Int)
     private val moodViews = mutableMapOf<MaterialCardView, MoodOption>()
@@ -40,6 +41,9 @@ class HistoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
+        // Gunakan helper navigasi yang seragam
+        BottomNavHelper.setup(this, "checkin")
+
         val scrollContent = findViewById<ScrollView>(R.id.scrollContent)
         ViewCompat.setOnApplyWindowInsetsListener(scrollContent) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -47,7 +51,6 @@ class HistoryActivity : AppCompatActivity() {
             insets
         }
 
-        // Cuma 3 opsi mood
         moodViews[findViewById(R.id.moodBaik)] = MoodOption("Baik", 3)
         moodViews[findViewById(R.id.moodBiasa)] = MoodOption("Biasa", 2)
         moodViews[findViewById(R.id.moodBuruk)] = MoodOption("Buruk", 1)
@@ -82,7 +85,7 @@ class HistoryActivity : AppCompatActivity() {
 
             val checkInData = hashMapOf(
                 "userId" to userId,
-                "mood" to selectedMoodValue,           // Int 1-3
+                "mood" to selectedMoodValue,
                 "hasPhysicalSymptom" to kendalaTerpilih.isNotEmpty(),
                 "physicalSymptoms" to kendalaTerpilih,
                 "notes" to catatan,
@@ -93,7 +96,6 @@ class HistoryActivity : AppCompatActivity() {
                 .add(checkInData)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Check-in berhasil disimpan!", Toast.LENGTH_SHORT).show()
-                    // Refresh riwayat dulu biar kelihatan, baru tutup halaman
                     loadHistory()
                     etCatatan.setText("")
                     chipGroupKendala.clearCheck()
@@ -104,12 +106,6 @@ class HistoryActivity : AppCompatActivity() {
                     Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
-
-        findViewById<LinearLayout>(R.id.navBeranda).setOnClickListener { finish() }
-        findViewById<LinearLayout>(R.id.navJadwal).setOnClickListener { /* TODO: buka JadwalActivity */ }
-        findViewById<LinearLayout>(R.id.navCheckIn).setOnClickListener { /* sudah di halaman ini */ }
-        findViewById<LinearLayout>(R.id.navMisi).setOnClickListener { /* TODO: buka MissionActivity */ }
-        findViewById<LinearLayout>(R.id.navProfil).setOnClickListener { /* TODO: buka ProfilActivity */ }
 
         val chips = listOf(
             findViewById<Chip>(R.id.chipSakitKepala),
@@ -134,7 +130,6 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
 
-        // Tampilkan riwayat check-in yang udah ada
         loadHistory()
     }
 
@@ -162,8 +157,6 @@ class HistoryActivity : AppCompatActivity() {
                 .start()
         }
     }
-
-    // ==================== BAGIAN RIWAYAT ====================
 
     private fun loadHistory() {
         val userId = auth.currentUser?.uid ?: return

@@ -24,12 +24,14 @@ class DashboardActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Data class buat nampung skor + tanggal per hari, dipakai chart & (nanti) skor utama
     data class DailyBurnout(val date: Date, val score: Int)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
+
+        // Menggunakan helper untuk navigasi agar kode lebih ringkas
+        BottomNavHelper.setup(this, "beranda")
 
         val scrollContent = findViewById<ScrollView>(R.id.scrollContent)
         ViewCompat.setOnApplyWindowInsetsListener(scrollContent) { view, insets ->
@@ -45,12 +47,6 @@ class DashboardActivity : AppCompatActivity() {
         val btnCheckIn = findViewById<Button>(R.id.btnCheckIn)
         val btnMission = findViewById<Button>(R.id.btnMission)
 
-        val navBeranda = findViewById<LinearLayout>(R.id.navBeranda)
-        val navJadwal = findViewById<LinearLayout>(R.id.navJadwal)
-        val navCheckIn = findViewById<LinearLayout>(R.id.navCheckIn)
-        val navMisi = findViewById<LinearLayout>(R.id.navMisi)
-        val navProfil = findViewById<LinearLayout>(R.id.navProfil)
-
         tvUserName.text = auth.currentUser?.displayName ?: "Pengguna"
 
         loadBurnoutData(tvBurnoutScore, tvBurnoutLevel)
@@ -58,17 +54,10 @@ class DashboardActivity : AppCompatActivity() {
         btnCheckIn.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
         }
+
         btnMission.setOnClickListener {
             // TODO: pindah ke halaman Mission
         }
-
-        navBeranda.setOnClickListener { /* sudah di halaman ini */ }
-        navJadwal.setOnClickListener { /* TODO: buka JadwalActivity */ }
-        navCheckIn.setOnClickListener {
-            startActivity(Intent(this, HistoryActivity::class.java))
-        }
-        navMisi.setOnClickListener { /* TODO: buka MisiActivity */ }
-        navProfil.setOnClickListener { /* TODO: buka ProfilActivity */ }
     }
 
     private fun loadBurnoutData(tvScore: TextView, tvLevel: TextView) {
@@ -131,7 +120,6 @@ class DashboardActivity : AppCompatActivity() {
         if (dailyData.isEmpty()) return
 
         val today = Calendar.getInstance()
-        // Calendar.DAY_OF_WEEK: 1=Minggu, 2=Senin, ... 7=Sabtu
         val dayInitials = arrayOf("M", "S", "S", "R", "K", "J", "S")
 
         for (day in dailyData) {
@@ -139,7 +127,6 @@ class DashboardActivity : AppCompatActivity() {
             val isToday = cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) &&
                     cal.get(Calendar.YEAR) == today.get(Calendar.YEAR)
 
-            // --- Bar (+ angka skor kalau hari ini) ---
             val barWrapper = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.BOTTOM
@@ -156,7 +143,7 @@ class DashboardActivity : AppCompatActivity() {
                     text = day.score.toString()
                     setTextColor(Color.parseColor("#F5C518"))
                     textSize = 10f
-                    setTypeface(typeface, Typeface.BOLD)
+                    setTypeface(null, Typeface.BOLD)
                     gravity = Gravity.CENTER
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -166,7 +153,7 @@ class DashboardActivity : AppCompatActivity() {
                 barWrapper.addView(scoreLabel)
             }
 
-            val barHeightDp = 20 + (day.score * 50 / 100) // rentang 20dp - 70dp
+            val barHeightDp = 20 + (day.score * 50 / 100)
             val bar = CardView(this).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(barHeightDp)
@@ -180,13 +167,12 @@ class DashboardActivity : AppCompatActivity() {
             barWrapper.addView(bar)
             barsContainer.addView(barWrapper)
 
-            // --- Label hari (S/S/R/K/J/S/M) ---
             val label = TextView(this).apply {
                 text = dayInitials[cal.get(Calendar.DAY_OF_WEEK) - 1]
                 textSize = 10f
                 gravity = Gravity.CENTER
                 setTextColor(Color.parseColor(if (isToday) "#1A1A2E" else "#CCCCCC"))
-                if (isToday) setTypeface(typeface, Typeface.BOLD)
+                if (isToday) setTypeface(null, Typeface.BOLD)
                 layoutParams = LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
                 )

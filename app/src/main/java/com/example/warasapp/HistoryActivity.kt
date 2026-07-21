@@ -20,9 +20,9 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.example.warasapp.logic.MoodLogRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -67,6 +67,11 @@ class HistoryActivity : AppCompatActivity() {
         val btnSimpan = findViewById<Button>(R.id.btnSimpanCheckIn)
 
         btnSimpan.setOnClickListener {
+            if (NotifPrefsHelper.isAnsweredToday(this, "mood")) {
+                Toast.makeText(this, "Kamu udah check-in hari ini", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (selectedMoodValue == null) {
                 Toast.makeText(this, "Pilih mood dulu ya", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -83,28 +88,24 @@ class HistoryActivity : AppCompatActivity() {
             }
             val catatan = etCatatan.text.toString()
 
-            val checkInData = hashMapOf(
-                "userId" to userId,
-                "mood" to selectedMoodValue,
-                "hasPhysicalSymptom" to kendalaTerpilih.isNotEmpty(),
-                "physicalSymptoms" to kendalaTerpilih,
-                "notes" to catatan,
-                "timestamp" to FieldValue.serverTimestamp()
-            )
-
-            db.collection("mood_logs")
-                .add(checkInData)
-                .addOnSuccessListener {
+            MoodLogRepository.saveEntry(
+                userId = userId,
+                mood = selectedMoodValue,
+                symptoms = kendalaTerpilih,
+                notes = catatan,
+                onSuccess = {
+                    NotifPrefsHelper.setAnsweredToday(this, "mood")
                     Toast.makeText(this, "Check-in berhasil disimpan!", Toast.LENGTH_SHORT).show()
                     loadHistory()
                     etCatatan.setText("")
                     chipGroupKendala.clearCheck()
                     selectedMoodValue = null
                     moodViews.keys.forEach { it.isChecked = false }
-                }
-                .addOnFailureListener { e ->
+                },
+                onFailure = { e ->
                     Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
+            )
         }
 
         val chips = listOf(

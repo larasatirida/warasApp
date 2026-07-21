@@ -1,6 +1,9 @@
 package com.example.warasapp
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -8,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -44,6 +48,15 @@ class LoginActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        requestNotificationPermission()
+
+
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
         // Konfigurasi Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -69,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Login berhasil", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, InputJadwalActivity::class.java))
+                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
                 .addOnFailureListener { e ->
@@ -107,13 +120,26 @@ class LoginActivity : AppCompatActivity() {
                     .set(userData, com.google.firebase.firestore.SetOptions.merge())
                     .addOnCompleteListener {
                         Toast.makeText(this, "Login dengan Google berhasil", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, InputJadwalActivity::class.java))
+                        startActivity(Intent(this, MainActivity::class.java))
                         finish()
                     }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Login dengan Google gagal: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    101
+                )
+            }
+        }
     }
 
 }

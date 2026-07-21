@@ -6,8 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import java.util.Date
+import com.example.warasapp.logic.MoodLogRepository
 
 class SymptomActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -15,16 +14,10 @@ class SymptomActionReceiver : BroadcastReceiver() {
         WorkManager.getInstance(context).cancelUniqueWork("escalation_fisik")
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous_test"
 
-        // Simpan data kosong / no symptom sesuai skema tim (kendala = array kosong)
-        val symptomLog = hashMapOf(
-            "userId" to userId,
-            "kendala" to arrayListOf<String>(), // Kosong karena memilih "Enggak"
-            "timestamp" to Date()
-        )
-
-        FirebaseFirestore.getInstance()
-            .collection("mood_logs") // Sesuaikan nama collection dengan kesepakatan tim
-            .add(symptomLog)
+        // User pilih "Enggak" -> gejala fisik kosong, tapi tetap ditulis ke field
+        // yang sama (physicalSymptoms) dan dokumen hari yang sama supaya tidak
+        // menimpa mood yang sudah dijawab lewat notifikasi pertama.
+        MoodLogRepository.saveEntry(userId = userId, symptoms = emptyList())
 
         // Hilangkan notifikasi kendala fisik (misal ID-nya 1002)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

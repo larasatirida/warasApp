@@ -1,65 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:background="#FFFFFF"
-    android:padding="16dp"
-    android:layout_marginBottom="10dp">
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="1dp"
+    app:strokeColor="#F0F0F0"
+    app:strokeWidth="1dp">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvItemName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="#1A1C2E"
-            tools:text="Meeting tim" />
+        <!-- Kotak Ikon Vektor Kategori di Kiri -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#F8F9FA"
+            app:strokeColor="#EEEEEE"
+            app:strokeWidth="1dp"
+            android:layout_marginEnd="16dp">
 
-        <TextView
-            android:id="@+id/tvItemDuration"
-            android:layout_width="match_parent"
+            <ImageView
+                android:id="@+id/ivCategoryIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:src="@drawable/ic_jadwal"
+                app:tint="#4A5568" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Informasi Utama (Nama, Sumber/GCal, Waktu, & Badge Beban) -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textSize="12sp"
-            android:textColor="#9B9FA8"
-            tools:text="09:00 - 10:00 (60 mnt)" />
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Baris Nama Aktivitas & Badge Sumber (GCal / Manual) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:id="@+id/tvActivityName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A2E"
+                    tools:text="Kerja" />
+
+                <!-- Badge Indikator Sumber (Misal: GCal atau Manual) -->
+                <TextView
+                    android:id="@+id/tvSourceBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_pill_label"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:text="GCal"
+                    android:textColor="#5B93F0"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <!-- Baris Waktu & Badge Tingkat Beban (Ringan/Sedang/Berat) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvTimeDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="#999999"
+                    tools:text="09:30 - 17:00 (7j 30m)" />
+
+                <!-- Badge Tingkat Kesulitan/Beban -->
+                <TextView
+                    android:id="@+id/tvWeightBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_pill_label"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="2dp"
+                    tools:text="Sedang"
+                    tools:textColor="#D99B00"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Tombol Opsi (Titik Tiga di Kanan) -->
+        <ImageButton
+            android:id="@+id/btnOptions"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_more"
+            app:tint="#999999"
+            android:contentDescription="Opsi" />
+
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvItemSource"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="manual"
-        android:textSize="11sp"
-        android:layout_marginEnd="12dp"
-        android:textColor="#5B93F0" />
-
-    <ImageButton
-        android:id="@+id/btnEditActivity"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_edit"
-        app:tint="#999999"
-        android:contentDescription="Edit" />
-
-    <ImageButton
-        android:id="@+id/btnDeleteActivity"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@android:drawable/ic_menu_delete"
-        app:tint="#F87171"
-        android:contentDescription="Hapus" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -5,23 +5,86 @@
     android:orientation="vertical"
     android:padding="24dp">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NAMA AKTIVITAS"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="#999999"
+        android:layout_marginBottom="6dp" />
+
     <EditText
         android:id="@+id/etActivityName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nama aktivitas"
+        android:hint="Contoh: Rapat, Coding, Istirahat"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@drawable/bg_day_chip"
-        android:layout_marginBottom="12dp" />
+        android:textColor="#000000"
+        android:background="@drawable/bg_tab_container"
+        android:layout_marginBottom="16dp" />
 
-    <EditText
-        android:id="@+id/etDuration"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Durasi (menit)"
-        android:inputType="number"
-        android:padding="12dp"
-        android:background="@drawable/bg_day_chip" />
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="JAM MULAI"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#999999"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etStartTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="09:00"
+                android:focusable="false"
+                android:clickable="true"
+                android:padding="12dp"
+                android:textColor="#000000"
+                android:background="@drawable/bg_tab_container" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="JAM SELESAI"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#999999"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etEndTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="17:00"
+                android:focusable="false"
+                android:clickable="true"
+                android:padding="12dp"
+                android:textColor="#000000"
+                android:background="@drawable/bg_tab_container" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

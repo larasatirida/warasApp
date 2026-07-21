@@ -160,9 +160,10 @@
                         android:orientation="horizontal"
                         android:weightSum="100">
                         <View
+                            android:id="@+id/viewBurnoutProgress"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:layout_weight="67"
+                            android:layout_weight="0"
                             android:background="@drawable/smooth_burnout_gradient" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -176,7 +177,6 @@
                 </RelativeLayout>
             </LinearLayout>
 
-            <!-- 3. CARD TREN 7 HARI -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -204,10 +204,11 @@
                             android:textStyle="bold"
                             android:letterSpacing="0.05"/>
                         <TextView
+                            android:id="@+id/tvTrendDateRange"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
-                            android:text="7 – 13 Jul"
+                            android:text="..."
                             android:textColor="#999999"
                             android:textSize="12sp" />
                     </RelativeLayout>
@@ -218,16 +219,6 @@
                         android:layout_height="90dp"
                         android:orientation="horizontal"
                         android:gravity="bottom">
-                        <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="35dp" android:layout_weight="1" android:layout_marginHorizontal="4dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#55F5C518" app:cardElevation="0dp"/>
-                        <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:layout_marginHorizontal="4dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#55F5C518" app:cardElevation="0dp"/>
-                        <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:layout_marginHorizontal="4dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#55F5C518" app:cardElevation="0dp"/>
-                        <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="38dp" android:layout_weight="1" android:layout_marginHorizontal="4dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#55F5C518" app:cardElevation="0dp"/>
-                        <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="45dp" android:layout_weight="1" android:layout_marginHorizontal="4dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#55F5C518" app:cardElevation="0dp"/>
-                        <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:layout_marginHorizontal="4dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#55F5C518" app:cardElevation="0dp"/>
-                        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="bottom" android:layout_marginHorizontal="4dp">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="67" android:textColor="#F5C518" android:textSize="10sp" android:textStyle="bold" android:layout_gravity="center" android:layout_marginBottom="2dp"/>
-                            <androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="48dp" app:cardCornerRadius="6dp" app:cardBackgroundColor="#F5C518" app:cardElevation="0dp"/>
-                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout
@@ -236,13 +227,6 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:layout_marginTop="6dp">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="S" android:textColor="#CCCCCC" android:textSize="10sp" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="S" android:textColor="#CCCCCC" android:textSize="10sp" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="R" android:textColor="#CCCCCC" android:textSize="10sp" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="K" android:textColor="#CCCCCC" android:textSize="10sp" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="J" android:textColor="#CCCCCC" android:textSize="10sp" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="S" android:textColor="#CCCCCC" android:textSize="10sp" android:gravity="center" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="M" android:textColor="#1A1A2E" android:textSize="10sp" android:textStyle="bold" android:gravity="center" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -258,74 +242,13 @@
                 android:letterSpacing="0.05"
                 android:layout_marginBottom="12dp"/>
 
-            <androidx.cardview.widget.CardView
+            <LinearLayout
+                android:id="@+id/insightContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardCornerRadius="14dp"
-                app:cardBackgroundColor="#12F5C518"
-                app:cardElevation="0dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="14dp"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_warning"
-                        android:contentDescription="Warning" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Jam kerja kamu naik 12% minggu ini." android:textColor="#1A1A2E" android:textSize="13sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardCornerRadius="14dp"
-                app:cardBackgroundColor="#12F87171"
-                app:cardElevation="0dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="14dp"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_sleepy"
-                        android:contentDescription="Sleepy" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rata-rata tidur di bawah 7 jam (6.2 jam)." android:textColor="#1A1A2E" android:textSize="13sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="14dp"
-                app:cardBackgroundColor="#124ADE80"
-                app:cardElevation="0dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="14dp"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="12dp"
-                        app:srcCompat="@drawable/ic_check"
-                        android:contentDescription="Check" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Kamu sudah olahraga 3x minggu ini!" android:textColor="#1A1A2E" android:textSize="13sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                android:orientation="vertical">
+                <!-- Insight cards will be rendered here dynamically -->
+            </LinearLayout>
 
             <!-- 5. TOMBOL QUICK ACTION -->
             <LinearLayout

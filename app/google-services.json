@@ -109,6 +109,14 @@
           }
         },
         {
+          "client_id": "839310180011-qq9ug8sesdimtthpgun1jq1886ftlj5a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.warasapp",
+            "certificate_hash": "7cd512ffd776084e992090fe424c92c1cc415715"
+          }
+        },
+        {
           "client_id": "839310180011-hkj3o7ehu6ns3pjqrnsuirkjkcs642dh.apps.googleusercontent.com",
           "client_type": 3
         }

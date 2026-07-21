@@ -51,6 +51,14 @@
             android:name=".InputJadwalActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".MissionActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

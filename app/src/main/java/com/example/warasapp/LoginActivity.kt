@@ -90,10 +90,26 @@ class LoginActivity : AppCompatActivity() {
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Login dengan Google berhasil", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, InputJadwalActivity::class.java))
-                finish()
+            .addOnSuccessListener { authResult ->
+                val user = authResult.user
+                
+                // Simpan/Update data user ke Firestore agar nama muncul di Dashboard
+                val userData = hashMapOf(
+                    "uid" to user?.uid,
+                    "fullName" to user?.displayName,
+                    "email" to user?.email,
+                    "lastLogin" to com.google.firebase.Timestamp.now()
+                )
+
+                com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(user?.uid ?: "")
+                    .set(userData, com.google.firebase.firestore.SetOptions.merge())
+                    .addOnCompleteListener {
+                        Toast.makeText(this, "Login dengan Google berhasil", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, InputJadwalActivity::class.java))
+                        finish()
+                    }
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Login dengan Google gagal: ${e.message}", Toast.LENGTH_SHORT).show()

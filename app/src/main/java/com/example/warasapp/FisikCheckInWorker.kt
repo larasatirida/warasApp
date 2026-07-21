@@ -13,6 +13,12 @@ import java.util.concurrent.TimeUnit
 class FisikCheckInWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        if (!NotifPrefsHelper.isNotifEnabled(applicationContext, "pengingat_mission")) {
+            return Result.success() // toggle mati, skip aja
+        }
+        if (NotifPrefsHelper.isAnsweredToday(applicationContext, "fisik")) {
+            return Result.success() // udah dijawab hari ini, nggak perlu nanya lagi
+        }
         showNotification()
         return Result.success()
     }

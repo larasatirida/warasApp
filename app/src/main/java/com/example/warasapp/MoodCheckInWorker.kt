@@ -19,6 +19,9 @@ class MoodCheckInWorker(
         if (!NotifPrefsHelper.isNotifEnabled(applicationContext, "checkin_harian")) {
             return Result.success() // toggle mati, skip aja
         }
+        if (NotifPrefsHelper.isAnsweredToday(applicationContext, "mood")) {
+            return Result.success() // udah dijawab hari ini, nggak perlu nanya lagi
+        }
         showNotification()
         return Result.success()
     }
@@ -52,8 +55,8 @@ class MoodCheckInWorker(
             .setContentText("Yuk check-in mood sebelum tidur")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .addAction(buildMoodAction("Baik", 5, 1))
-            .addAction(buildMoodAction("Biasa", 3, 2))
+            .addAction(buildMoodAction("Baik", 3, 1))
+            .addAction(buildMoodAction("Biasa", 2, 2))
             .addAction(buildMoodAction("Buruk", 1, 3))
             .build()
 

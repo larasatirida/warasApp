@@ -17,23 +17,27 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import android.os.Build
 import android.app.NotificationManager
+import androidx.appcompat.app.AlertDialog
+import com.google.firebase.auth.FirebaseAuth
+import com.example.warasapp.logic.MoodLogRepository
 
 class MainActivity : AppCompatActivity() {
+
+    // Daftar gejala sama dengan yang dipakai di layar check-in manual (activity_history)
+    // biar data yang masuk konsisten dari jalur mana pun.
+    private val symptomLabels = arrayOf(
+        "Sakit kepala", "Nyeri punggung", "Mata lelah", "Sulit tidur",
+        "Kurang nafsu makan", "Mudah marah", "Sulit fokus", "Kelelahan ekstrem"
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestNotificationPermission()
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        if (intent.getStringExtra("OPEN_FRAGMENT") == "SYMPTOM_PAGE") {
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.cancel(1002)
-            NotifPrefsHelper.setPending(this, "fisik", false)
-            WorkManager.getInstance(this).cancelUniqueWork("escalation_fisik")
-        }
-
         // Jalankan Penjadwalan Rutin di Jam Spesifik
         scheduleDailyNotifications()
+        triggerMoodNotificationNow()
         scheduleMissionCheck()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -42,6 +46,58 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        if (intent.getStringExtra("OPEN_FRAGMENT") == "SYMPTOM_PAGE") {
+            // Jangan langsung ke Dashboard — tanya dulu gejala apa yang dialami,
+            // baru pindah layar setelah user selesai isi (atau batal).
+            handleSymptomNotificationTap()
+        } else {
+            goToDashboard()
+        }
+    }
+
+    private fun handleSymptomNotificationTap() {
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.cancel(1002)
+        NotifPrefsHelper.setPending(this, "fisik", false)
+        WorkManager.getInstance(this).cancelUniqueWork("escalation_fisik")
+
+        val checkedItems = BooleanArray(symptomLabels.size)
+
+        AlertDialog.Builder(this)
+            .setTitle("Keluhan fisik apa yang kamu rasakan?")
+            .setMultiChoiceItems(symptomLabels, checkedItems) { _, which, isChecked ->
+                checkedItems[which] = isChecked
+            }
+            .setCancelable(false)
+            .setPositiveButton("Simpan") { _, _ ->
+                val selected = symptomLabels.filterIndexed { index, _ -> checkedItems[index] }
+                saveSymptomsAndContinue(selected)
+            }
+            .setNegativeButton("Batal") { _, _ -> goToDashboard() }
+            .show()
+    }
+
+    private fun saveSymptomsAndContinue(selected: List<String>) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            goToDashboard()
+            return
+        }
+        MoodLogRepository.saveEntry(
+            userId = userId,
+            symptoms = selected,
+            onSuccess = {
+                NotifPrefsHelper.setAnsweredToday(this, "fisik")
+                goToDashboard()
+            },
+            onFailure = {
+                // Tetap lanjut ke Dashboard walau gagal simpan, biar user nggak nyangkut.
+                goToDashboard()
+            }
+        )
+    }
+
+    private fun goToDashboard() {
         val intent = Intent(this, DashboardActivity::class.java)
         startActivity(intent)
         finish()
@@ -63,19 +119,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun requestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    101
-                )
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            val granted = grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                // no-op untuk sekarang
             }
         }
     }
-    
+
+    private fun triggerMoodNotificationNow() {
+        val request = OneTimeWorkRequestBuilder<MoodCheckInWorker>()
+            .setInitialDelay(15, TimeUnit.SECONDS)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(request)
+    }
+
     private fun scheduleDailyNotifications() {
         val workManager = WorkManager.getInstance(this)
 

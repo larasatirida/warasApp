@@ -6,9 +6,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.auth.FirebaseAuth
-import java.util.Date
+import com.example.warasapp.logic.MoodLogRepository
 import java.util.concurrent.TimeUnit
 
 class MoodActionReceiver : BroadcastReceiver() {
@@ -22,15 +21,7 @@ class MoodActionReceiver : BroadcastReceiver() {
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous_test"
 
-        val moodLog = hashMapOf(
-            "userId" to userId,
-            "mood" to moodValue,
-            "timestamp" to Date()
-        )
-
-        FirebaseFirestore.getInstance()
-            .collection("mood_logs")
-            .add(moodLog)
+        MoodLogRepository.saveEntry(userId = userId, mood = moodValue)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         NotifPrefsHelper.setAnsweredToday(context, "mood")

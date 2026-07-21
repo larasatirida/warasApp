@@ -1,6 +1,7 @@
 package com.example.warasapp
 
 import android.app.AlertDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -29,8 +29,9 @@ class InputJadwalActivity : AppCompatActivity() {
     private lateinit var emptyState: View
     private lateinit var tvWeekRange: TextView
 
+    private lateinit var adapter: ActivityAdapter
+    private val activityList = mutableListOf<ActivityItem>()
 
-    // The 7 days of the current week (Mon-Sun), as Calendar instances
     private val weekDays = mutableListOf<Calendar>()
     private var selectedDayIndex = 0
 
@@ -42,15 +43,19 @@ class InputJadwalActivity : AppCompatActivity() {
         BottomNavHelper.setup(this, "jadwal")
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
-        val rootScrollView = findViewById<View>(R.id.dayChipContainer).parent.let {
-        }
 
         dayChipContainer = findViewById(R.id.dayChipContainer)
         rvActivities = findViewById(R.id.rvActivities)
         emptyState = findViewById(R.id.emptyState)
         tvWeekRange = findViewById(R.id.tvWeekRange)
 
+        adapter = ActivityAdapter(
+            activityList,
+            onEditClick = { item -> showAddActivityDialog(item) },
+            onDeleteClick = { item -> confirmDeleteActivity(item) }
+        )
         rvActivities.layoutManager = LinearLayoutManager(this)
+        rvActivities.adapter = adapter
 
         buildCurrentWeek()
         renderDayChips()
@@ -61,17 +66,13 @@ class InputJadwalActivity : AppCompatActivity() {
         }
 
         findViewById<View>(R.id.btnConnectGoogle).setOnClickListener {
-            // TODO: hook up Google Calendar OAuth + import flow here
             Toast.makeText(this, "Integrasi Google Calendar segera hadir", Toast.LENGTH_SHORT).show()
         }
-
     }
 
-    /** Builds the Mon–Sun range for the current week and updates the header text. */
     private fun buildCurrentWeek() {
         weekDays.clear()
         val cal = Calendar.getInstance()
-        // Move back to Monday of this week
         val diffToMonday = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7
         cal.add(Calendar.DAY_OF_MONTH, -diffToMonday)
 
@@ -80,7 +81,6 @@ class InputJadwalActivity : AppCompatActivity() {
             cal.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        // Default selection = today, if today falls in this week; else Monday
         val today = Calendar.getInstance()
         selectedDayIndex = weekDays.indexOfFirst {
             it.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
@@ -93,7 +93,6 @@ class InputJadwalActivity : AppCompatActivity() {
         tvWeekRange.text = "Minggu ini · ${first.get(Calendar.DAY_OF_MONTH)} – ${fmt.format(last.time)}"
     }
 
-    /** Inflates the 7 day chips into dayChipContainer and wires selection. */
     private fun renderDayChips() {
         dayChipContainer.removeAllViews()
         val inflater = LayoutInflater.from(this)
@@ -110,7 +109,7 @@ class InputJadwalActivity : AppCompatActivity() {
 
             chip.setOnClickListener {
                 selectedDayIndex = index
-                renderDayChips() // re-render to update highlight state
+                renderDayChips()
                 loadActivitiesForSelectedDay()
             }
 
@@ -130,7 +129,6 @@ class InputJadwalActivity : AppCompatActivity() {
         }
     }
 
-    /** Loads activities for the selected day from Firestore and toggles the empty state. */
     private fun loadActivitiesForSelectedDay() {
         val userId = auth.currentUser?.uid ?: return
         val selected = weekDays[selectedDayIndex]
@@ -146,14 +144,24 @@ class InputJadwalActivity : AppCompatActivity() {
             .whereEqualTo("userId", userId)
             .whereGreaterThanOrEqualTo("date", Timestamp(startOfDay.time))
             .whereLessThanOrEqualTo("date", Timestamp(endOfDay.time))
-            .orderBy("date", Query.Direction.ASCENDING)
             .get()
             .addOnSuccessListener { snapshot ->
-
-
+                activityList.clear()
+                for (doc in snapshot.documents) {
+                    val name = doc.getString("name") ?: "Tanpa nama"
+                    val duration = doc.getLong("durationMinutes")?.toInt() ?: 0
+                    val source = doc.getString("source") ?: "manual"
+                    val start = doc.getString("startTime") ?: "--:--"
+                    val end = doc.getString("endTime") ?: "--:--"
+                    activityList.add(ActivityItem(doc.id, name, duration, source, start, end))
+                }
+                
+                showEmptyState(activityList.isEmpty())
+                adapter.updateData(activityList)
             }
-            .addOnFailureListener {
+            .addOnFailureListener { e ->
                 showEmptyState(true)
+                Toast.makeText(this, "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
 
@@ -162,58 +170,106 @@ class InputJadwalActivity : AppCompatActivity() {
         rvActivities.visibility = if (isEmpty) View.GONE else View.VISIBLE
     }
 
-    /** Shows a dialog to add a manual activity for the currently selected day. */
-    private fun showAddActivityDialog() {
+    private fun showAddActivityDialog(itemToEdit: ActivityItem? = null) {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_activity, null)
         val etName = view.findViewById<EditText>(R.id.etActivityName)
-        val etDuration = view.findViewById<EditText>(R.id.etDuration)
+        val etStart = view.findViewById<EditText>(R.id.etStartTime)
+        val etEnd = view.findViewById<EditText>(R.id.etEndTime)
+
+        var sH = 9; var sM = 0
+        var eH = 10; var eM = 0
+
+        if (itemToEdit != null) {
+            etName.setText(itemToEdit.name)
+            etStart.setText(itemToEdit.startTime)
+            etEnd.setText(itemToEdit.endTime)
+            val startParts = itemToEdit.startTime.split(":")
+            if (startParts.size == 2) {
+                sH = startParts[0].toIntOrNull() ?: 9
+                sM = startParts[1].toIntOrNull() ?: 0
+            }
+            val endParts = itemToEdit.endTime.split(":")
+            if (endParts.size == 2) {
+                eH = endParts[0].toIntOrNull() ?: 10
+                eM = endParts[1].toIntOrNull() ?: 0
+            }
+        }
+
+        etStart.setOnClickListener {
+            TimePickerDialog(this, { _, h, m ->
+                sH = h; sM = m
+                etStart.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m))
+            }, sH, sM, true).show()
+        }
+
+        etEnd.setOnClickListener {
+            TimePickerDialog(this, { _, h, m ->
+                eH = h; eM = m
+                etEnd.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m))
+            }, eH, eM, true).show()
+        }
 
         AlertDialog.Builder(this)
-            .setTitle("Tambah Aktivitas Manual")
+            .setTitle(if (itemToEdit == null) "Tambah Aktivitas" else "Edit Aktivitas")
             .setView(view)
             .setPositiveButton("Simpan") { _, _ ->
-                saveManualActivity(etName.text.toString().trim(), etDuration.text.toString().trim())
+                val name = etName.text.toString().trim()
+                if (name.isEmpty() || etStart.text.isEmpty() || etEnd.text.isEmpty()) {
+                    Toast.makeText(this, "Semua data wajib diisi", Toast.LENGTH_SHORT).show()
+                } else {
+                    saveManualActivity(itemToEdit?.id, name, sH, sM, eH, eM)
+                }
             }
             .setNegativeButton("Batal", null)
             .show()
     }
 
-    private fun saveManualActivity(name: String, durationText: String) {
-        if (name.isEmpty() || durationText.isEmpty()) {
-            Toast.makeText(this, "Nama aktivitas dan durasi wajib diisi", Toast.LENGTH_SHORT).show()
+    private fun saveManualActivity(docId: String?, name: String, sH: Int, sM: Int, eH: Int, eM: Int) {
+        val startTotalMin = sH * 60 + sM
+        val endTotalMin = eH * 60 + eM
+        var duration = endTotalMin - startTotalMin
+        if (duration < 0) duration += 24 * 60
+        if (duration == 0) {
+            Toast.makeText(this, "Jam mulai dan selesai tidak boleh sama", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val duration = durationText.toIntOrNull()
-        if (duration == null || duration <= 0) {
-            Toast.makeText(this, "Durasi harus berupa angka valid", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            Toast.makeText(this, "Sesi login habis, silakan login ulang", Toast.LENGTH_SHORT).show()
-            return
-        }
-
+        val userId = auth.currentUser?.uid ?: return
         val selectedDate = weekDays[selectedDayIndex].time
 
         val activityData = hashMapOf(
             "userId" to userId,
             "name" to name,
             "durationMinutes" to duration,
+            "startTime" to String.format(Locale.getDefault(), "%02d:%02d", sH, sM),
+            "endTime" to String.format(Locale.getDefault(), "%02d:%02d", eH, eM),
             "date" to Timestamp(selectedDate),
             "source" to "manual"
         )
 
-        db.collection("activities")
-            .add(activityData)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Aktivitas berhasil disimpan", Toast.LENGTH_SHORT).show()
-                loadActivitiesForSelectedDay()
+        val collection = db.collection("activities")
+        val task = if (docId == null) collection.add(activityData) else collection.document(docId).set(activityData)
+
+        task.addOnSuccessListener {
+            Toast.makeText(this, "Berhasil disimpan", Toast.LENGTH_SHORT).show()
+            loadActivitiesForSelectedDay()
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun confirmDeleteActivity(item: ActivityItem) {
+        AlertDialog.Builder(this)
+            .setTitle("Hapus Aktivitas")
+            .setMessage("Yakin ingin menghapus \"${item.name}\"?")
+            .setPositiveButton("Hapus") { _, _ ->
+                db.collection("activities").document(item.id).delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        loadActivitiesForSelectedDay()
+                    }
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 }

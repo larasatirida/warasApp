@@ -20,8 +20,9 @@ object BottomNavHelper {
         val navItems: Map<Int, Class<*>> = mapOf(
             R.id.navBeranda to DashboardActivity::class.java,
             R.id.navJadwal to InputJadwalActivity::class.java,
-            R.id.navCheckIn to HistoryActivity::class.java, // Sesuaikan dengan nama class kamu
-            // TODO: tambahin navMisi & navProfil ke sini kalau MisiActivity/ProfileActivity sudah dibuat
+            R.id.navCheckIn to HistoryActivity::class.java,
+            R.id.navMisi to MissionActivity::class.java,
+            R.id.navProfil to ProfileActivity::class.java
         )
 
         // 2. Loop untuk styling SEMUA tab (termasuk yang belum ada activity-nya)
@@ -53,6 +54,7 @@ object BottomNavHelper {
             navView?.setOnClickListener {
                 if (currentTag != getTagFromId(viewId)) {
                     activity.startActivity(Intent(activity, targetActivity))
+                    activity.overridePendingTransition(0, 0)
                     activity.finish()
                 }
             }

@@ -130,6 +130,10 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
 
+        // Tampilkan tanggal hari ini yang sesuai
+        val sdf = SimpleDateFormat("EEEE, d MMM yyyy", Locale("id", "ID"))
+        findViewById<TextView>(R.id.tvDateSubtitle).text = "${sdf.format(Date())} · Bagaimana kondisimu?"
+
         loadHistory()
     }
 

@@ -59,6 +59,6 @@ class MissionCheckWorker(
             .build()
 
         val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(1003, notification)
+        manager.notify(1006, notification)
     }
 }

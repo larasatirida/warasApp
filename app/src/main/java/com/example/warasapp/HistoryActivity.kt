@@ -145,6 +145,8 @@ class HistoryActivity : AppCompatActivity() {
             onSuccess = {
                 NotifPrefsHelper.setAnsweredToday(this, "mood")
                 Toast.makeText(this, "Check-in berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                // Dari develop (teman): jadwalin notif tips berdasarkan kendala yang dipilih
+                SymptomNotifHelper.scheduleTips(this, kendalaTerpilih)
                 loadHistory()
                 resetFormToNewEntry()
             },

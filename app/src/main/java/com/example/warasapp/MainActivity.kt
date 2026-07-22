@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
             symptoms = selected,
             onSuccess = {
                 NotifPrefsHelper.setAnsweredToday(this, "fisik")
+                SymptomNotifHelper.scheduleTips(this, selected)
                 goToDashboard()
             },
             onFailure = {
@@ -125,7 +126,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (!NotifPrefsHelper.isAnsweredToday(this, "mission_shown")) {
-            val missionTestRequest = OneTimeWorkRequestBuilder<MissionCheckWorker>()
+            val missionTestRequest = OneTimeWorkRequestBuilder<MissionSuggestWorker>()
                 .setInitialDelay(30, TimeUnit.SECONDS)
                 .build()
             WorkManager.getInstance(this).enqueue(missionTestRequest)
@@ -161,7 +162,7 @@ class MainActivity : AppCompatActivity() {
         if (NotifPrefsHelper.isAnsweredToday(this, "mission_shown")) {
             return
         }
-        val request = OneTimeWorkRequestBuilder<MissionCheckWorker>()
+        val request = OneTimeWorkRequestBuilder<MissionSuggestWorker>()
             .setInitialDelay(30, TimeUnit.SECONDS)
             .build()
         WorkManager.getInstance(this).enqueue(request)

@@ -1,51 +1,57 @@
 package com.example.warasapp.logic
 
 import com.example.warasapp.network.RetrofitClient
+import kotlinx.coroutines.tasks.await
 
-fun getDailyMission(todayMood: Int, todayDurationHours: Float, symptomTypes: List<String>): String {
+fun getDailyMission(userName: String, todayMood: Int, todayDurationHours: Float, symptomTypes: List<String>): String {
     val isOverworked = todayDurationHours > 8
+    val name = if (userName.isBlank()) "Babe" else userName
+    
+    // Ubah semua gejala ke huruf kecil agar pencarian lebih akurat
+    val symptoms = symptomTypes.map { it.lowercase() }
+    
     return when {
-        symptomTypes.contains("kelelahan_ekstrem") ->
-            "Istirahat total dulu ya, jangan dipaksa lanjut aktivitas hari ini"
+        symptoms.any { it.contains("lelah") && it.contains("ekstrem") } ->
+            "$name, istirahat total dulu yaah, jangan dipaksa lanjut aktivitas hari ini okay"
 
-        symptomTypes.contains("sulit_tidur") ->
-            "Coba matikan layar HP 30 menit sebelum tidur malam ini"
+        symptoms.any { it.contains("tidur") } ->
+            "Biar gampang tidur, $name coba deh matiin layar HP 30 menit sebelum tidur malam ini"
 
-        symptomTypes.contains("sakit_kepala") ->
-            "Redupkan layar & istirahatkan mata 5 menit di ruangan gelap"
+        symptoms.any { it.contains("kepala") } ->
+            "Kalo sakit kepala, $name redupin layar & istirahatin mata 5 menit di ruangan gelap dulu deh"
 
-        symptomTypes.contains("mata_lelah") ->
-            "Coba teknik 20-20-20: tiap 20 menit, lihat objek sejauh 20 kaki selama 20 detik"
+        symptoms.any { it.contains("mata") } ->
+            "$name, kalau matamu lelah, coba teknik 20-20-20: tiap 20 menit, lihat objek sejauh 20 kaki selama 20 detik"
 
-        symptomTypes.contains("nyeri_punggung") ->
-            "Coba stretching punggung ringan selama 5 menit"
+        symptoms.any { it.contains("punggung") || it.contains("jompo") } ->
+            "Biar ga jompo, $name coba deh stretching punggung ringan selama 5 menit"
 
-        symptomTypes.contains("sulit_fokus") ->
-            "Coba teknik Pomodoro: kerja 25 menit, istirahat 5 menit"
+        symptoms.any { it.contains("fokus") } ->
+            "Nih tips biar fokus, $name coba teknik Pomodoro: kerja 25 menit, istirahat 5 menit"
 
-        symptomTypes.contains("mudah_marah") ->
-            "Coba tarik napas dalam 5 kali sebelum lanjut aktivitas"
+        symptoms.any { it.contains("marah") } ->
+            "Jangan marah-marah plis $name, coba tarik napas dalam 5 kali sebelum lanjut aktivitas"
 
-        symptomTypes.contains("kurang_nafsu_makan") ->
-            "Coba makan camilan kecil dulu, meski sedikit"
+        symptoms.any { it.contains("makan") || it.contains("nafsu") } ->
+            "$name ga harus dipaksa makan kalau ga nafsu, coba makan camilan kecil dulu, meski sedikit"
 
         todayMood == 1 && isOverworked ->
-            "Coba jalan-jalan keluar 10 menit, aktivitas fisik ringan bantu perbaiki mood"
+            "$name Capek ya? coba jalan-jalan keluar 10 menit, aktivitas fisik ringan bantu perbaiki mood kamu"
 
         todayMood == 1 ->
-            "Coba tulis 3 kalimat tentang perasaanmu hari ini, menulis bantu meredakan emosi"
+            "Mood $name lagi ga banget ya? coba tulis 3 kalimat tentang perasaanmu hari ini, menulis bantu meredakan emosi"
 
         todayMood == 2 && isOverworked ->
-            "Ambil jeda 5 menit, tarik napas dalam beberapa kali sebelum lanjut aktivitas"
+            "Ambil jeda 5 menit $name, tarik napas dalam beberapa kali sebelum lanjut aktivitas"
 
         todayMood == 2 ->
-            "Coba minum air putih dan regangkan badan sebentar"
+            "Walau mood $name b aja, coba minum air putih dan regangkan badan sebentar"
 
         todayMood == 3 && isOverworked ->
-            "Mood kamu bagus, tapi aktivitas hari ini padat—tetap sisihkan waktu istirahat ya"
+            "Mood $name bagus, tapi aktivitas hari ini padat—tetap sisihkan waktu istirahat yah"
 
         else ->
-            "Kamu baik-baik aja hari ini! Terus jaga ritme ini ya"
+            "OMG $name, Kamu baik-baik aja hari ini! Terus jaga ritme ini ya"
     }
 }
 val curatedMentalHealthQuotes = listOf(
@@ -57,7 +63,14 @@ val curatedMentalHealthQuotes = listOf(
 )
 
 suspend fun getFullMissionContent(todayMood: Int, todayDurationHours: Float, symptomTypes: List<String>): String {
-    val mainMission = getDailyMission(todayMood, todayDurationHours, symptomTypes)
+    val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+    var userName = ""
+    if (userId != null) {
+        val doc = com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(userId).get().await()
+        userName = doc.getString("fullName") ?: doc.getString("name") ?: ""
+    }
+    
+    val mainMission = getDailyMission(userName, todayMood, todayDurationHours, symptomTypes)
 
     val quotes = try {
         if ((0..1).random() == 0) {

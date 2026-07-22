@@ -28,7 +28,7 @@ private fun getStartAndEndOfToday(): Pair<Timestamp, Timestamp> {
 
 suspend fun getTodayMoodAndSymptoms(): Pair<Int, List<String>> {
     val firestore = FirebaseFirestore.getInstance()
-    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return Pair(2, emptyList())
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return Pair(0, emptyList())
     val (start, end) = getStartAndEndOfToday()
 
     return try {
@@ -38,16 +38,15 @@ suspend fun getTodayMoodAndSymptoms(): Pair<Int, List<String>> {
             .whereLessThanOrEqualTo("timestamp", end)
             .get().await()
 
-        if (snapshot.isEmpty) return Pair(2, emptyList())
+        if (snapshot.isEmpty) return Pair(0, emptyList())
 
-        // Ambil yang paling baru (manual sort agar tidak butuh index)
         val latestDoc = snapshot.documents.maxByOrNull { it.getTimestamp("timestamp")?.seconds ?: 0 }
-        val mood = latestDoc?.getLong("mood")?.toInt() ?: 2
+        val mood = latestDoc?.getLong("mood")?.toInt() ?: 0
         val symptoms = (latestDoc?.get("physicalSymptoms") as? List<*>)?.map { it.toString() } ?: emptyList()
         
         Pair(mood, symptoms)
     } catch (e: Exception) {
-        Pair(2, emptyList())
+        Pair(0, emptyList())
     }
 }
 
@@ -63,10 +62,12 @@ suspend fun getTodayTotalHours(): Float {
             .whereLessThanOrEqualTo("date", end)
             .get().await()
 
-        val totalMinutes = snapshot.documents.sumOf {
-            (it.get("durationMinutes") as? Number)?.toInt() ?: 0
+        val totalEffectiveMinutes = snapshot.documents.sumOf {
+            val mins = (it.get("durationMinutes") as? Number)?.toFloat() ?: 0f
+            val beban = it.getString("tingkatBeban") ?: "Sedang"
+            (mins * bebanToWeight(beban)).toDouble()
         }
-        totalMinutes / 60f
+        (totalEffectiveMinutes / 60f).toFloat()
     } catch (e: Exception) {
         0f
     }

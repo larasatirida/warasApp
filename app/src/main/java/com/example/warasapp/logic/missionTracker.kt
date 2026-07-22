@@ -76,27 +76,14 @@ private suspend fun getCheckinDates(missionType: MissionType, daysBack: Int): Li
 
 suspend fun getSleepStreakMission(): MissionProgress {
     val dates = getCheckinDates(MissionType.SLEEP, daysBack = 7)
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-    var streak = 0
-    var checkDate = Date()
-    for (i in 0 until 7) {
-        val key = dateFormat.format(checkDate)
-        if (dates.contains(key)) {
-            streak++
-            checkDate = Date(checkDate.time - 24L * 60 * 60 * 1000)
-        } else {
-            break
-        }
-    }
-    streak = streak.coerceAtMost(MissionType.SLEEP.target)
+    val progress = dates.size.coerceAtMost(MissionType.SLEEP.target)
 
     return MissionProgress(
         title = MissionType.SLEEP.title,
         xpReward = MissionType.SLEEP.xpReward,
-        currentProgress = streak,
+        currentProgress = progress,
         targetProgress = MissionType.SLEEP.target,
-        percentComplete = ((streak.toFloat() / MissionType.SLEEP.target) * 100).toInt()
+        percentComplete = ((progress.toFloat() / MissionType.SLEEP.target) * 100).toInt()
     )
 }
 

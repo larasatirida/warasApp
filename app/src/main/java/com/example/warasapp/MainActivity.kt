@@ -12,10 +12,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
-import android.Manifest
 import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-import android.os.Build
 import android.app.NotificationManager
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.auth.FirebaseAuth

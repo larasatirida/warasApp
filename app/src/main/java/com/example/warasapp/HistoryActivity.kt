@@ -96,6 +96,7 @@ class HistoryActivity : AppCompatActivity() {
                 onSuccess = {
                     NotifPrefsHelper.setAnsweredToday(this, "mood")
                     Toast.makeText(this, "Check-in berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                    SymptomNotifHelper.scheduleTips(this, kendalaTerpilih)
                     loadHistory()
                     etCatatan.setText("")
                     chipGroupKendala.clearCheck()

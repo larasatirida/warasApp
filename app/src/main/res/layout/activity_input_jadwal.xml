@@ -59,12 +59,12 @@
                         android:layout_height="44dp"
                         android:background="@drawable/bg_icon_box">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:text="📅"
-                            android:textSize="20sp" />
+                            app:srcCompat="@drawable/ic_jadwal"
+                            android:contentDescription="Jadwal" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -96,12 +96,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:layout_marginTop="16dp"
-                    android:text="🔗  Masuk dengan Google"
+                    android:text="Masuk dengan Google"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"
                     android:background="@drawable/bg_button_blue"
-                    android:elevation="0dp" />
+                    android:elevation="0dp"
+                    app:icon="@drawable/ic_link"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp" />
             </LinearLayout>
 
             <!-- Week day selector -->
@@ -139,12 +142,12 @@
                     android:paddingTop="32dp"
                     android:paddingBottom="32dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📭"
-                        android:textSize="34sp"
-                        android:alpha="0.5" />
+                    <ImageView
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:alpha="0.5"
+                        app:srcCompat="@drawable/ic_postbox"
+                        android:contentDescription="Belum ada aktivitas" />
 
                     <TextView
                         android:layout_width="wrap_content"

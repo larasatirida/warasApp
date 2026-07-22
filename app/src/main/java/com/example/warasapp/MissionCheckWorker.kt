@@ -46,6 +46,7 @@ class MissionCheckWorker(
 
         showMissionNotification(title, desc)
         NotifPrefsHelper.setLastNotifiedMissionId(applicationContext, missionId)
+        NotifPrefsHelper.setAnsweredToday(applicationContext, "mission_shown")
     }
 
     private fun showMissionNotification(title: String, desc: String) {

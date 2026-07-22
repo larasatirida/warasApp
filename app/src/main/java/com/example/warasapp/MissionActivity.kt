@@ -63,7 +63,6 @@ class MissionActivity : AppCompatActivity() {
         val container = findViewById<LinearLayout>(R.id.missionListContainer)
         container.removeAllViews()
 
-        // Update jumlah tab secara dinamis
         val aktifCount = missions.size
         findViewById<TextView>(R.id.tvTabAktif).text = "Aktif ($aktifCount)"
         findViewById<TextView>(R.id.tvTabSelesai).text = "Selesai (0)"
@@ -110,12 +109,10 @@ class MissionActivity : AppCompatActivity() {
                 else -> null
             }
 
-            // Update Progress Bar
             val fillParams = progressFill.layoutParams as LinearLayout.LayoutParams
             fillParams.weight = (mission.percentComplete.toFloat() / 100).coerceIn(0f, 1f)
             progressFill.layoutParams = fillParams
 
-            // Handle Check-in Button Click
             btnCheckIn.setOnClickListener {
                 type?.let { missionType ->
                     showConfirmationDialog(missionType)
@@ -141,13 +138,11 @@ class MissionActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val success = logMissionCheckin(missionType)
             if (success) {
-                // Panggil pengecekan penyelesaian misi untuk memberikan XP jika sudah 100%
                 com.example.warasapp.logic.checkAndAwardMissionCompletion(missionType)
-                
-                Toast.makeText(this@MissionActivity, "Berhasil! XP kamu bertambah jika misi selesai.", Toast.LENGTH_SHORT).show()
-                loadMissionData() // Refresh UI untuk update progress dan XP/Level
+                Toast.makeText(this@MissionActivity, "Berhasil!", Toast.LENGTH_SHORT).show()
+                loadMissionData()
             } else {
-                Toast.makeText(this@MissionActivity, "Kamu sudah check-in misi ini hari ini.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MissionActivity, "Sudah check-in hari ini.", Toast.LENGTH_SHORT).show()
             }
         }
     }

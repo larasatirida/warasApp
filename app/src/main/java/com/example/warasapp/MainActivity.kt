@@ -25,8 +25,6 @@ import androidx.work.workDataOf
 
 class MainActivity : AppCompatActivity() {
 
-    // Daftar gejala sama dengan yang dipakai di layar check-in manual (activity_history)
-    // biar data yang masuk konsisten dari jalur mana pun.
     private val symptomLabels = arrayOf(
         "Sakit kepala", "Nyeri punggung", "Mata lelah", "Sulit tidur",
         "Kurang nafsu makan", "Mudah marah", "Sulit fokus", "Kelelahan ekstrem"
@@ -37,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Jalankan Penjadwalan Rutin di Jam Spesifik
+        // penjadwalan rutin di jam spesifik
         scheduleDailyNotifications()
         triggerMoodNotificationNow()
         triggerMissionNotificationNow()
@@ -45,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         scheduleBurnoutAlertCheck()
         scheduleMissionReminders()
         scheduleQuoteNotification()
+        scheduleDailyAdviceNotification()
+        scheduleGeneralReminder()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -53,8 +53,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (intent.getStringExtra("OPEN_FRAGMENT") == "SYMPTOM_PAGE") {
-            // Jangan langsung ke Dashboard — tanya dulu gejala apa yang dialami,
-            // baru pindah layar setelah user selesai isi (atau batal).
+            // isi gejala dulu, ga langsung ke dashboard
             handleSymptomNotificationTap()
         } else {
             goToDashboard()
@@ -97,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                 goToDashboard()
             },
             onFailure = {
-                // Tetap lanjut ke Dashboard walau gagal simpan, biar user nggak nyangkut.
+                // tetep lanjut ke Dashboard walau gagal simpan, biar user nggak nyangkut.
                 goToDashboard()
             }
         )
@@ -170,21 +169,21 @@ class MainActivity : AppCompatActivity() {
     private fun scheduleDailyNotifications() {
         val workManager = WorkManager.getInstance(this)
 
-        // Daftarkan pengingat Jam 2 Siang (14:00)
+        // pengingat Jam 2 Siang (14:00)
         val delay14 = calculateDelay(14, 0)
         val request14 = PeriodicWorkRequestBuilder<MoodCheckInWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(delay14, TimeUnit.MILLISECONDS)
             .build()
         workManager.enqueueUniquePeriodicWork("Mood_14PM", ExistingPeriodicWorkPolicy.KEEP, request14)
 
-        // Daftarkan pengingat Jam 5 Sore (17:00)
+        // pengingat Jam 5 Sore (17:00)
         val delay17 = calculateDelay(17, 0)
         val request17 = PeriodicWorkRequestBuilder<MoodCheckInWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(delay17, TimeUnit.MILLISECONDS)
             .build()
         workManager.enqueueUniquePeriodicWork("Mood_17PM", ExistingPeriodicWorkPolicy.KEEP, request17)
 
-        // Daftarkan pengingat Jam 8 Malam (20:00)
+        // pengingat Jam 8 Malam (20:00)
         val delay20 = calculateDelay(20, 0)
         val request20 = PeriodicWorkRequestBuilder<MoodCheckInWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(delay20, TimeUnit.MILLISECONDS)
@@ -252,5 +251,25 @@ class MainActivity : AppCompatActivity() {
             .build()
         WorkManager.getInstance(this)
             .enqueueUniquePeriodicWork("QuoteNoon", ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    private fun scheduleDailyAdviceNotification() {
+        // Misal dijadwalkan jam 10 pagi agar user bisa siap-siap
+        val delay = calculateDelay(10, 0) 
+        val request = PeriodicWorkRequestBuilder<DailyAdviceWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork("DailyAdvice", ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    private fun scheduleGeneralReminder() {
+        // Jadwalkan jam 9 malam (21:00) untuk mengecek apakah data sudah diisi
+        val delay = calculateDelay(21, 0)
+        val request = PeriodicWorkRequestBuilder<GeneralReminderWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork("GeneralReminder", ExistingPeriodicWorkPolicy.KEEP, request)
     }
 }

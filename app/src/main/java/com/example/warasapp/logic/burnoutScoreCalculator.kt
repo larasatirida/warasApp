@@ -10,20 +10,15 @@ fun bebanToWeight(beban: String): Float {
 }
 
 fun calculateWeeklyBurnoutScore(avgMood: Float, avgEffectiveHours: Float, symptomDaysCount: Int): Int {
-    // 1. Kontribusi Jam Kerja (Maks 40 poin)
-    // Asumsi: 8 jam kerja = ~25 poin, >12 jam = 40 poin
     val hourScore = (avgEffectiveHours * 4).coerceAtMost(40f)
 
-    // 2. Kontribusi Mood (Maks 30 poin)
-    // Mood: 1 (Buruk), 2 (Biasa), 3 (Baik)
-    // Jika mood buruk (1), burnout naik. Jika mood baik (3), burnout turun.
     val moodScore = when {
-        avgMood <= 1.5f -> 30f // Mood buruk banget
+        avgMood == 0f -> 0f    // Jika belum ada data mood, jangan tambah poin
+        avgMood <= 1.5f -> 30f // Mood buruk
         avgMood <= 2.5f -> 15f // Mood biasa
         else -> 0f            // Mood baik
     }
 
-    // 3. Kontribusi Gejala Fisik (Maks 30 poin)
     val symptomScore = if (symptomDaysCount >= 1) 30f else 0f
 
     return (hourScore + moodScore + symptomScore).toInt().coerceIn(0, 100)

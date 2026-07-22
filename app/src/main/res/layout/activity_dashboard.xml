@@ -231,7 +231,44 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 4. SECTION INSIGHT -->
+            <!-- 4. SECTION QUOTE -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QUOTE HARI INI"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#CCCCCC"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="12dp"/>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#1A1A2E"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:gravity="center">
+                    <TextView
+                        android:id="@+id/tvDailyQuote"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="..."
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:textStyle="italic"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 5. SECTION INSIGHT -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

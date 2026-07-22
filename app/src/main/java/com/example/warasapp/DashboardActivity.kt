@@ -30,14 +30,12 @@ class DashboardActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    // Data class buat nampung skor + tanggal per hari
     data class DailyBurnoutData(val label: String, val score: Int)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // Menggunakan helper untuk navigasi agar kode lebih ringkas
         BottomNavHelper.setup(this, "beranda")
 
         val scrollContent = findViewById<ScrollView>(R.id.scrollContent)
@@ -54,7 +52,6 @@ class DashboardActivity : AppCompatActivity() {
         val btnCheckIn = findViewById<Button>(R.id.btnCheckIn)
         val btnMission = findViewById<Button>(R.id.btnMission)
 
-        // Ambil nama dari Firestore agar lebih akurat
         val userId = auth.currentUser?.uid
         if (userId != null) {
             db.collection("users").document(userId).get()
@@ -88,18 +85,15 @@ class DashboardActivity : AppCompatActivity() {
     private fun loadDashboardData(tvScore: TextView, tvLevel: TextView) {
         lifecycleScope.launch {
             try {
-                // 1. Ambil skor hari ini (sudah menggabungkan mood & jam kerja)
                 val todayScore = getTodayBurnoutScore()
                 tvScore.text = todayScore.toString()
                 tvLevel.text = burnoutScoreCategory(todayScore)
 
-                // Update Burnout Progress Bar (Horizontal line)
                 val progressView = findViewById<android.view.View>(R.id.viewBurnoutProgress)
                 val params = progressView.layoutParams as android.widget.LinearLayout.LayoutParams
                 params.weight = todayScore.toFloat().coerceIn(0f, 100f)
                 progressView.layoutParams = params
 
-                // 2. Ambil tren mingguan
                 val trend = getWeeklyTrend()
                 renderTrendChart(trend.map { DailyBurnoutData(it.dayLabel, it.score) })
                 
@@ -113,15 +107,46 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun updateInsights() {
         val container = findViewById<LinearLayout>(R.id.insightContainer)
+        val tvUserName = findViewById<TextView>(R.id.tvUserName)
+        val tvQuote = findViewById<TextView>(R.id.tvDailyQuote)
         container.removeAllViews()
         
-        val tvNoData = TextView(this).apply {
-            text = "Belum ada insight hari ini. Yuk isi jadwal dan mood kamu!"
-            textSize = 13f
-            setTextColor(Color.parseColor("#999999"))
-            setPadding(0, dpToPx(10), 0, dpToPx(20))
+        lifecycleScope.launch {
+            // 1. Ambil Quote (Retrofit atau Curated)
+            try {
+                val quote = if ((0..1).random() == 0) {
+                    com.example.warasapp.logic.curatedMentalHealthQuotes.random()
+                } else {
+                    com.example.warasapp.network.RetrofitClient.instance.getRandomQuote().quote
+                }
+                tvQuote.text = "\"$quote\""
+            } catch (e: Exception) {
+                tvQuote.text = "\"${com.example.warasapp.logic.curatedMentalHealthQuotes.random()}\""
+            }
+
+            // 2. Ambil Saran Harian
+            val (mood, symptoms) = com.example.warasapp.logic.getTodayMoodAndSymptoms()
+            val hours = com.example.warasapp.logic.getTodayTotalHours()
+            val userName = tvUserName.text.toString()
+            
+            val hasData = symptoms.isNotEmpty() || hours > 0 || mood != 0
+            
+            val message = if (hasData) {
+                com.example.warasapp.logic.getDailyMission(userName, mood, hours, symptoms)
+            } else {
+                "Belum ada insight hari ini. Yuk mulai dengan isi jadwal atau check-in mood kamu!"
+            }
+
+            val tvAdvice = TextView(this@DashboardActivity).apply {
+                text = message
+                textSize = 14f
+                setTextColor(Color.parseColor("#1A1A2E"))
+                setTypeface(null, android.graphics.Typeface.BOLD)
+                setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16))
+                background = getDrawable(R.drawable.bg_tab_container)
+            }
+            container.addView(tvAdvice)
         }
-        container.addView(tvNoData)
     }
 
     private fun renderTrendChart(dailyData: List<DailyBurnoutData>) {
@@ -132,7 +157,6 @@ class DashboardActivity : AppCompatActivity() {
 
         if (dailyData.isEmpty()) return
 
-        // Ambil hari ini untuk highlight (misal: "Sel" atau "Tue")
         val sdf = java.text.SimpleDateFormat("EEE", java.util.Locale("id"))
         val todayLabel = sdf.format(java.util.Date())
 

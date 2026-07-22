@@ -67,6 +67,7 @@ class LoginActivity : AppCompatActivity() {
         val etEmail: EditText = findViewById(R.id.etEmail)
         val etPassword: EditText = findViewById(R.id.etPassword)
         val btnLogin: Button = findViewById(R.id.btnLogin)
+        val tvForgotPassword: TextView = findViewById(R.id.tvForgotPassword)
         val tvGoToRegister: TextView = findViewById(R.id.tvGoToRegister)
         val btnGoogleLogin: Button = findViewById(R.id.btnGoogleLogin)
 
@@ -89,7 +90,22 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this, "Login gagal: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
         }
+        tvForgotPassword.setOnClickListener {
+            val email = etEmail.text.toString().trim()
 
+            if (email.isEmpty()) {
+                Toast.makeText(this, "Masukkan email dulu di kolom email", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Link reset password sudah dikirim ke $email, cek inbox/spam ya", Toast.LENGTH_LONG).show()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Gagal kirim reset password: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
         tvGoToRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }

@@ -1,6 +1,5 @@
 package com.example.warasapp
 
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
@@ -34,17 +33,32 @@ class HistoryActivity : AppCompatActivity() {
 
     private var selectedMoodValue: Int? = null
 
+    // Non-null saat user sedang mengedit entri riwayat yang sudah ada
+    // (bukan submit check-in baru). Diisi dengan Firestore document id.
+    private var editingDocId: String? = null
+
     private data class MoodOption(val label: String, val value: Int)
     private val moodViews = mutableMapOf<MaterialCardView, MoodOption>()
+
+    private lateinit var chipGroupKendala: ChipGroup
+    private lateinit var etCatatan: EditText
+    private lateinit var btnSimpan: Button
+    private lateinit var tvEditingBanner: TextView
+    private lateinit var scrollContent: ScrollView
+
+    private val allChipIds = listOf(
+        R.id.chipSakitKepala, R.id.chipNyeriPunggung, R.id.chipMataLelah,
+        R.id.chipSulitTidur, R.id.chipKurangMakan, R.id.chipMudahMarah,
+        R.id.chipSulitFokus, R.id.chipKelelahanEkstrem
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_history)
 
-        // Gunakan helper navigasi yang seragam
         BottomNavHelper.setup(this, "checkin")
 
-        val scrollContent = findViewById<ScrollView>(R.id.scrollContent)
+        scrollContent = findViewById(R.id.scrollContent)
         ViewCompat.setOnApplyWindowInsetsListener(scrollContent) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(view.paddingLeft, systemBars.top, view.paddingRight, view.paddingBottom)
@@ -62,63 +76,32 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
 
-        val chipGroupKendala = findViewById<ChipGroup>(R.id.chipGroupKendala)
-        val etCatatan = findViewById<EditText>(R.id.etCatatan)
-        val btnSimpan = findViewById<Button>(R.id.btnSimpanCheckIn)
+        chipGroupKendala = findViewById(R.id.chipGroupKendala)
+        etCatatan = findViewById(R.id.etCatatan)
+        btnSimpan = findViewById(R.id.btnSimpanCheckIn)
+        tvEditingBanner = findViewById(R.id.tvEditingBanner)
 
-        btnSimpan.setOnClickListener {
-            if (NotifPrefsHelper.isAnsweredToday(this, "mood")) {
-                Toast.makeText(this, "Kamu udah check-in hari ini", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (selectedMoodValue == null) {
-                Toast.makeText(this, "Pilih mood dulu ya", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val userId = auth.currentUser?.uid
-            if (userId == null) {
-                Toast.makeText(this, "Kamu belum login", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val kendalaTerpilih = chipGroupKendala.checkedChipIds.map { id ->
-                chipGroupKendala.findViewById<Chip>(id).text.toString()
-            }
-            val catatan = etCatatan.text.toString()
-
-            MoodLogRepository.saveEntry(
-                userId = userId,
-                mood = selectedMoodValue,
-                symptoms = kendalaTerpilih,
-                notes = catatan,
-                onSuccess = {
-                    NotifPrefsHelper.setAnsweredToday(this, "mood")
-                    Toast.makeText(this, "Check-in berhasil disimpan!", Toast.LENGTH_SHORT).show()
-                    loadHistory()
-                    etCatatan.setText("")
-                    chipGroupKendala.clearCheck()
-                    selectedMoodValue = null
-                    moodViews.keys.forEach { it.isChecked = false }
-                },
-                onFailure = { e ->
-                    Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            )
+        tvEditingBanner.setOnClickListener {
+            resetFormToNewEntry()
         }
 
-        val chips = listOf(
-            findViewById<Chip>(R.id.chipSakitKepala),
-            findViewById<Chip>(R.id.chipNyeriPunggung),
-            findViewById<Chip>(R.id.chipMataLelah),
-            findViewById<Chip>(R.id.chipSulitTidur),
-            findViewById<Chip>(R.id.chipKurangMakan),
-            findViewById<Chip>(R.id.chipMudahMarah),
-            findViewById<Chip>(R.id.chipSulitFokus),
-            findViewById<Chip>(R.id.chipKelelahanEkstrem)
-        )
+        btnSimpan.setOnClickListener {
+            val currentEditingId = editingDocId
 
+            if (currentEditingId == null) {
+                // ===== Mode: submit check-in BARU =====
+                if (NotifPrefsHelper.isAnsweredToday(this, "mood")) {
+                    Toast.makeText(this, "Kamu udah check-in hari ini. Tap entri hari ini di Riwayat kalau mau mengedit.", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+                submitNewEntry()
+            } else {
+                // ===== Mode: update entri yang sudah ada =====
+                submitEditedEntry(currentEditingId)
+            }
+        }
+
+        val chips = allChipIds.map { findViewById<Chip>(it) }
         chips.forEach { chip ->
             chip.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
@@ -131,11 +114,112 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
 
-        // Tampilkan tanggal hari ini yang sesuai
         val sdf = SimpleDateFormat("EEEE, d MMM yyyy", Locale("id", "ID"))
         findViewById<TextView>(R.id.tvDateSubtitle).text = "${sdf.format(Date())} · Bagaimana kondisimu?"
 
         loadHistory()
+    }
+
+    private fun submitNewEntry() {
+        if (selectedMoodValue == null) {
+            Toast.makeText(this, "Pilih mood dulu ya", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(this, "Kamu belum login", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val kendalaTerpilih = chipGroupKendala.checkedChipIds.map { id ->
+            chipGroupKendala.findViewById<Chip>(id).text.toString()
+        }
+        val catatan = etCatatan.text.toString()
+
+        MoodLogRepository.saveEntry(
+            userId = userId,
+            mood = selectedMoodValue,
+            symptoms = kendalaTerpilih,
+            notes = catatan,
+            onSuccess = {
+                NotifPrefsHelper.setAnsweredToday(this, "mood")
+                Toast.makeText(this, "Check-in berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                loadHistory()
+                resetFormToNewEntry()
+            },
+            onFailure = { e ->
+                Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun submitEditedEntry(docId: String) {
+        if (selectedMoodValue == null) {
+            Toast.makeText(this, "Pilih mood dulu ya", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val kendalaTerpilih = chipGroupKendala.checkedChipIds.map { id ->
+            chipGroupKendala.findViewById<Chip>(id).text.toString()
+        }
+        val catatan = etCatatan.text.toString()
+
+        MoodLogRepository.updateEntry(
+            docId = docId,
+            mood = selectedMoodValue!!,
+            symptoms = kendalaTerpilih,
+            notes = catatan,
+            onSuccess = {
+                Toast.makeText(this, "Riwayat berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                loadHistory()
+                resetFormToNewEntry()
+            },
+            onFailure = { e ->
+                Toast.makeText(this, "Gagal memperbarui: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    /** Mengisi kartu check-in di atas dengan data entri lama, lalu masuk ke mode edit. */
+    private fun startEditingEntry(docId: String, mood: Int, symptoms: List<String>, note: String) {
+        editingDocId = docId
+        selectedMoodValue = mood
+
+        val targetView = moodViews.entries.firstOrNull { it.value.value == mood }?.key
+        if (targetView != null) {
+            highlightSelectedMood(targetView)
+        }
+
+        allChipIds.forEach { id ->
+            val chip = findViewById<Chip>(id)
+            chip.isChecked = symptoms.contains(chip.text.toString())
+        }
+
+        etCatatan.setText(note)
+
+        btnSimpan.text = "Update Check-in"
+        tvEditingBanner.visibility = View.VISIBLE
+
+        scrollContent.post { scrollContent.smoothScrollTo(0, 0) }
+    }
+
+    /** Mengosongkan form dan keluar dari mode edit, kembali ke mode submit baru. */
+    private fun resetFormToNewEntry() {
+        editingDocId = null
+        selectedMoodValue = null
+
+        moodViews.keys.forEach { view ->
+            view.isChecked = false
+            view.setCardBackgroundColor(Color.parseColor("#FAF9F5"))
+            view.translationY = 0f
+        }
+
+        allChipIds.forEach { id -> findViewById<Chip>(id).isChecked = false }
+        etCatatan.setText("")
+
+        btnSimpan.text = "Simpan Check-in"
+        tvEditingBanner.visibility = View.GONE
     }
 
     private val moodColors = mapOf(
@@ -185,7 +269,7 @@ class HistoryActivity : AppCompatActivity() {
                     val timestamp = doc.getDate("timestamp") ?: continue
 
                     val itemView = inflater.inflate(R.layout.item_history_checkin, container, false)
-                    bindHistoryItem(itemView, mood, symptoms, note, timestamp)
+                    bindHistoryItem(itemView, doc.id, mood, symptoms, note, timestamp)
                     container.addView(itemView)
                 }
             }
@@ -196,6 +280,7 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun bindHistoryItem(
         view: View,
+        docId: String,
         mood: Int,
         symptoms: List<String>,
         note: String,
@@ -236,6 +321,11 @@ class HistoryActivity : AppCompatActivity() {
 
         tvNote.text = if (note.isNotBlank()) "\"$note\"" else ""
         tvNote.visibility = if (note.isNotBlank()) View.VISIBLE else View.GONE
+
+        // Tap item riwayat untuk mengedit entri ini
+        view.setOnClickListener {
+            startEditingEntry(docId, mood, symptoms, note)
+        }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

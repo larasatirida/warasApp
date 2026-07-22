@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.widget.SwitchCompat
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -31,10 +32,72 @@ class ProfileActivity : AppCompatActivity() {
         setupNotifToggles()
     }
 
+    private fun showEditNameDialog(tvProfileName: TextView) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Ubah Nama Akun")
+
+        // Membuat kontainer untuk EditText agar marginnya rapi
+        val container = LinearLayout(this)
+        container.orientation = LinearLayout.VERTICAL
+        container.setPadding(60, 20, 60, 0)
+
+        val input = android.widget.EditText(this)
+        input.inputType = android.text.InputType.TYPE_CLASS_TEXT
+        input.setText(tvProfileName.text) // Mengisi otomatis dengan nama saat ini
+        input.setSelection(input.text.length) // Taruh kursor di akhir teks
+
+        container.addView(input)
+        builder.setView(container)
+
+        // Tombol Simpan
+        builder.setPositiveButton("Simpan") { dialog, _ ->
+            val newName = input.text.toString().trim()
+            if (newName.isNotEmpty()) {
+                // Panggil fungsi untuk menyimpan ke database
+                updateNameToDatabase(newName, tvProfileName)
+            } else {
+                Toast.makeText(this, "Nama tidak boleh kosong", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Tombol Batal
+        builder.setNegativeButton("Batal") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.show()
+    }
+
+    private fun updateNameToDatabase(newName: String, tvProfileName: TextView) {
+        val userId = auth.currentUser?.uid
+
+        if (userId != null) {
+            // Update "fullName" dan "name" sekaligus agar konsisten saat dibaca ulang
+            val updates = hashMapOf<String, Any>(
+                "fullName" to newName,
+                "name" to newName
+            )
+
+            db.collection("users").document(userId)
+                .update(updates)
+                .addOnSuccessListener {
+                    // Jika berhasil di database, update juga UI di layar
+                    tvProfileName.text = newName
+                    Toast.makeText(this, "Nama berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Gagal mengupdate nama: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            Toast.makeText(this, "Anda belum login", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun setupUserInfo() {
         val tvName = findViewById<TextView>(R.id.tvProfileName)
         val tvEmail = findViewById<TextView>(R.id.tvProfileEmail)
-        
+        val btnEditNama = findViewById<LinearLayout>(R.id.btnEditNama)
+
         val user = auth.currentUser
         tvEmail.text = user?.email ?: "email@kamu.com"
 
@@ -48,6 +111,11 @@ class ProfileActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     tvName.text = user.displayName ?: "Pengguna"
                 }
+        }
+
+        // Aksi saat area nama atau ikon pensil diklik
+        btnEditNama.setOnClickListener {
+            showEditNameDialog(tvName)
         }
     }
 

@@ -56,14 +56,35 @@
                             app:tint="#FFFFFF" />
                     </androidx.cardview.widget.CardView>
 
-                    <TextView
-                        android:id="@+id/tvProfileName"
+                    <!-- MODIFIKASI: Nama Pengguna & Ikon Edit Pensil -->
+                    <LinearLayout
+                        android:id="@+id/btnEditNama"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="..."
-                        android:textColor="#1A1A2E"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp">
+
+                        <TextView
+                            android:id="@+id/tvProfileName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="..."
+                            android:textColor="#1A1A2E"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginStart="8dp"
+                            app:srcCompat="@android:drawable/ic_menu_edit"
+                            app:tint="#999999" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvProfileEmail"
@@ -251,30 +272,8 @@
                     android:orientation="vertical"
                     android:paddingHorizontal="16dp">
 
-                    <!-- Menu Items -->
-                    <LinearLayout android:id="@+id/menuNotifikasi" android:layout_width="match_parent" android:layout_height="56dp" android:gravity="center_vertical" android:orientation="horizontal">
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_warning" app:tint="#1A1A2E" />
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="16dp" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Notifikasi" android:textColor="#1A1A2E" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="..." android:textColor="#999999" android:textSize="11sp" />
-                        </LinearLayout>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textColor="#CCCCCC" android:textSize="20sp" />
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
-
-                    <LinearLayout android:id="@+id/menuTargetBurnout" android:layout_width="match_parent" android:layout_height="56dp" android:gravity="center_vertical" android:orientation="horizontal">
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@drawable/ic_check" app:tint="#1A1A2E" />
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="16dp" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Target Burnout" android:textColor="#1A1A2E" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="..." android:textColor="#999999" android:textSize="11sp" />
-                        </LinearLayout>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="›" android:textColor="#CCCCCC" android:textSize="20sp" />
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" />
-
-                    <LinearLayout android:id="@+id/menuEksporData" android:layout_width="match_parent" android:layout_height="56dp" android:gravity="center_vertical" android:orientation="horizontal">
+                    <!-- MODIFIKASI: Hanya Ada Menu Ekspor Data -->
+                    <LinearLayout android:id="@+id/menuEksporData" android:layout_width="match_parent" android:layout_height="56dp" android:gravity="center_vertical" android:orientation="horizontal" android:clickable="true" android:focusable="true" android:background="?attr/selectableItemBackground">
                         <ImageView android:layout_width="20dp" android:layout_height="20dp" app:srcCompat="@android:drawable/ic_menu_save" app:tint="#1A1A2E" />
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="16dp" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ekspor Data" android:textColor="#1A1A2E" android:textStyle="bold" />

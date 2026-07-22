@@ -1,90 +1,291 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="NAMA AKTIVITAS"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:textColor="#999999"
-        android:layout_marginBottom="6dp" />
-
-    <EditText
-        android:id="@+id/etActivityName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Contoh: Rapat, Coding, Istirahat"
-        android:inputType="text"
-        android:padding="12dp"
-        android:textColor="#000000"
-        android:background="@drawable/bg_tab_container"
-        android:layout_marginBottom="16dp" />
+    android:layout_margin="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="24dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
+        <!-- Header: Judul & Tombol Close (X) -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginEnd="8dp">
+            android:layout_marginBottom="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="JAM MULAI"
-                android:textSize="11sp"
+                android:text="TAMBAH AKTIVITAS MANUAL"
+                android:textColor="#B0B3B8"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="#999999"
-                android:layout_marginBottom="6dp" />
+                android:letterSpacing="0.05"
+                android:layout_centerVertical="true"/>
 
-            <EditText
-                android:id="@+id/etStartTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="09:00"
-                android:focusable="false"
+            <ImageView
+                android:id="@+id/btnCloseDialog"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="#B0B3B8"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:padding="12dp"
-                android:textColor="#000000"
-                android:background="@drawable/bg_tab_container" />
-        </LinearLayout>
+                android:focusable="true"/>
+        </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="0dp"
+        <!-- Form 1: Nama Aktivitas -->
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="8dp">
+            android:text="NAMA AKTIVITAS"
+            android:textColor="#B0B3B8"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="JAM SELESAI"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="#999999"
-                android:layout_marginBottom="6dp" />
+        <EditText
+            android:id="@+id/etNamaAktivitas"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_input_field"
+            android:hint="mis. Rapat sprint"
+            android:textColorHint="#999999"
+            android:textColor="#1A1A2E"
+            android:textSize="14sp"
+            android:paddingHorizontal="16dp"
+            android:layout_marginBottom="16dp"
+            android:inputType="text"/>
 
-            <EditText
-                android:id="@+id/etEndTime"
-                android:layout_width="match_parent"
+        <!-- Form 2: Mulai & Selesai (Sejajar) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginBottom="16dp"
+            android:weightSum="2">
+
+            <!-- Mulai -->
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="17:00"
-                android:focusable="false"
-                android:clickable="true"
-                android:padding="12dp"
-                android:textColor="#000000"
-                android:background="@drawable/bg_tab_container" />
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MULAI"
+                    android:textColor="#B0B3B8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvWaktuMulai"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_input_field"
+                    android:text="--:-- --"
+                    android:textColor="#1A1A2E"
+                    android:textSize="14sp"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical"
+                    app:drawableEndCompat="@android:drawable/ic_menu_recent_history"
+                    app:drawableTint="#1A1A2E" />
+            </LinearLayout>
+
+            <!-- Selesai -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SELESAI"
+                    android:textColor="#B0B3B8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvWaktuSelesai"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_input_field"
+                    android:text="--:-- --"
+                    android:textColor="#1A1A2E"
+                    android:textSize="14sp"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical"
+                    app:drawableEndCompat="@android:drawable/ic_menu_recent_history"
+                    app:drawableTint="#1A1A2E" />
+            </LinearLayout>
         </LinearLayout>
+
+        <!-- Form 3: Kategori & Tingkat Beban -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginBottom="24dp"
+            android:weightSum="2">
+
+            <!-- Kategori -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="KATEGORI"
+                    android:textColor="#B0B3B8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvKategori"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/bg_input_field"
+                    android:text="Pekerjaan"
+                    android:textColor="#1A1A2E"
+                    android:textSize="14sp"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:focusable="true"/>
+            </LinearLayout>
+
+            <!-- Tingkat Beban -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TINGKAT BEBAN"
+                    android:textColor="#B0B3B8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- Ringan -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnBebanRingan"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        app:strokeColor="#2CD97B"
+                        app:strokeWidth="1.5dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Ringan"
+                            android:textSize="11sp"
+                            android:textColor="#2CD97B"
+                            android:textStyle="bold"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Sedang -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnBebanSedang"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        app:strokeColor="#F5C518"
+                        app:strokeWidth="1.5dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Sedang"
+                            android:textSize="11sp"
+                            android:textColor="#F5C518"
+                            android:textStyle="bold"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Berat -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/btnBebanBerat"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#FFFFFF"
+                        app:strokeColor="#F87171"
+                        app:strokeWidth="1.5dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Berat"
+                            android:textSize="11sp"
+                            android:textColor="#F87171"
+                            android:textStyle="bold"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Tombol Simpan -->
+        <Button
+            android:id="@+id/btnSimpanAktivitas"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="Simpan Aktivitas"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#1A1A2E"
+            app:cornerRadius="12dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
+
     </LinearLayout>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

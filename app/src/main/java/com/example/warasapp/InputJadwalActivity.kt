@@ -2,13 +2,11 @@ package com.example.warasapp
 
 import android.app.AlertDialog
 import android.app.TimePickerDialog
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +34,24 @@ class InputJadwalActivity : AppCompatActivity() {
     private var selectedDayIndex = 0
 
     private val dayNameFormat = SimpleDateFormat("EEE", Locale("id", "ID"))
+
+    // Struktur Data untuk Kategori & Icon Vektor
+    private data class KategoriItem(val nama: String, val iconResId: Int, val iconName: String)
+
+    private val daftarIkonTersedia = listOf(
+        Pair(R.drawable.ic_jadwal, "ic_jadwal"),
+        Pair(R.drawable.ic_mission, "ic_mission"),
+        Pair(R.drawable.ic_profile, "ic_profile"),
+        Pair(R.drawable.ic_check, "ic_check"),
+        Pair(R.drawable.ic_warning, "ic_warning"),
+        Pair(R.drawable.ic_sleepy, "ic_sleepy")
+    )
+
+    private val daftarKategori = mutableListOf(
+        KategoriItem("Pekerjaan", R.drawable.ic_jadwal, "ic_jadwal"),
+        KategoriItem("Istirahat", R.drawable.ic_sleepy, "ic_sleepy"),
+        KategoriItem("Olahraga", R.drawable.ic_mission, "ic_mission")
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,15 +92,27 @@ class InputJadwalActivity : AppCompatActivity() {
         val diffToMonday = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7
         cal.add(Calendar.DAY_OF_MONTH, -diffToMonday)
 
+        // Reset jam kalender minggu ke 00:00:00 agar bersih
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+
         for (i in 0..6) {
             weekDays.add(cal.clone() as Calendar)
             cal.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        val today = Calendar.getInstance()
+        // Ambil tanggal hari ini tanpa mempedulikan jam
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
         selectedDayIndex = weekDays.indexOfFirst {
-            it.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                    it.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+            it.timeInMillis == today.timeInMillis
         }.let { if (it >= 0) it else 0 }
 
         val first = weekDays.first()
@@ -120,12 +148,12 @@ class InputJadwalActivity : AppCompatActivity() {
     private fun applyChipStyle(chip: View, dayName: TextView, dayNumber: TextView, selected: Boolean) {
         if (selected) {
             chip.setBackgroundResource(R.drawable.bg_day_chip_selected)
-            dayName.setTextColor(android.graphics.Color.parseColor("#C7CBE0"))
-            dayNumber.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
+            dayName.setTextColor(Color.parseColor("#C7CBE0"))
+            dayNumber.setTextColor(Color.parseColor("#FFFFFF"))
         } else {
             chip.setBackgroundResource(R.drawable.bg_day_chip)
-            dayName.setTextColor(android.graphics.Color.parseColor("#9B9FA8"))
-            dayNumber.setTextColor(android.graphics.Color.parseColor("#1A1C2E"))
+            dayName.setTextColor(Color.parseColor("#9B9FA8"))
+            dayNumber.setTextColor(Color.parseColor("#1A1C2E"))
         }
     }
 
@@ -151,13 +179,26 @@ class InputJadwalActivity : AppCompatActivity() {
                     val name = doc.getString("name") ?: "Tanpa nama"
                     val duration = doc.getLong("durationMinutes")?.toInt() ?: 0
                     val source = doc.getString("source") ?: "manual"
-                    val start = doc.getString("startTime") ?: "--:--"
-                    val end = doc.getString("endTime") ?: "--:--"
-                    activityList.add(ActivityItem(doc.id, name, duration, source, start, end))
+                    val start = doc.getString("startTime") ?: doc.getString("start") ?: "--:--"
+                    val end = doc.getString("endTime") ?: doc.getString("end") ?: "--:--"
+                    val icon = doc.getString("icon") ?: "ic_jadwal"
+                    val weight = doc.getString("weight") ?: "Ringan"
+                    activityList.add(
+                        ActivityItem(
+                            id = doc.id,
+                            name = name,
+                            durationMinutes = duration,
+                            source = source,
+                            startTime = start,
+                            endTime = end,
+                            iconName = icon,
+                            weight = weight
+                        )
+                    )
                 }
-                
+
                 showEmptyState(activityList.isEmpty())
-                adapter.updateData(activityList)
+                adapter.updateData(activityList.toList())
             }
             .addOnFailureListener { e ->
                 showEmptyState(true)
@@ -172,17 +213,37 @@ class InputJadwalActivity : AppCompatActivity() {
 
     private fun showAddActivityDialog(itemToEdit: ActivityItem? = null) {
         val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_activity, null)
-        val etName = view.findViewById<EditText>(R.id.etActivityName)
-        val etStart = view.findViewById<EditText>(R.id.etStartTime)
-        val etEnd = view.findViewById<EditText>(R.id.etEndTime)
+        val dialog = AlertDialog.Builder(this)
+            .setView(view)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val btnClose = view.findViewById<ImageView>(R.id.btnCloseDialog)
+        val etName = view.findViewById<EditText>(R.id.etNamaAktivitas)
+        val tvStart = view.findViewById<TextView>(R.id.tvWaktuMulai)
+        val tvEnd = view.findViewById<TextView>(R.id.tvWaktuSelesai)
+        val tvKategori = view.findViewById<TextView>(R.id.tvKategori)
+        val btnRingan = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.btnBebanRingan)
+        val btnSedang = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.btnBebanSedang)
+        val btnBerat = view.findViewById<com.google.android.material.card.MaterialCardView>(R.id.btnBebanBerat)
+        val btnSimpan = view.findViewById<Button>(R.id.btnSimpanAktivitas)
 
         var sH = 9; var sM = 0
         var eH = 10; var eM = 0
+        var tingkatBeban = "Ringan"
+        var kategoriAktif = "Pekerjaan"
+        var iconAktif = "ic_jadwal"
+        var selectedResId = R.drawable.ic_jadwal
+
+        tvKategori.text = kategoriAktif
+        tvKategori.setCompoundDrawablesWithIntrinsicBounds(selectedResId, 0, 0, 0)
+        tvKategori.compoundDrawablePadding = 16
 
         if (itemToEdit != null) {
             etName.setText(itemToEdit.name)
-            etStart.setText(itemToEdit.startTime)
-            etEnd.setText(itemToEdit.endTime)
+            tvStart.text = itemToEdit.startTime
+            tvEnd.text = itemToEdit.endTime
             val startParts = itemToEdit.startTime.split(":")
             if (startParts.size == 2) {
                 sH = startParts[0].toIntOrNull() ?: 9
@@ -193,38 +254,158 @@ class InputJadwalActivity : AppCompatActivity() {
                 eH = endParts[0].toIntOrNull() ?: 10
                 eM = endParts[1].toIntOrNull() ?: 0
             }
+        } else {
+            tvStart.text = String.format(Locale.getDefault(), "%02d:%02d", sH, sM)
+            tvEnd.text = String.format(Locale.getDefault(), "%02d:%02d", eH, eM)
         }
 
-        etStart.setOnClickListener {
+        btnClose?.setOnClickListener { dialog.dismiss() }
+
+        tvStart.setOnClickListener {
             TimePickerDialog(this, { _, h, m ->
                 sH = h; sM = m
-                etStart.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m))
+                tvStart.text = String.format(Locale.getDefault(), "%02d:%02d", h, m)
             }, sH, sM, true).show()
         }
 
-        etEnd.setOnClickListener {
+        tvEnd.setOnClickListener {
             TimePickerDialog(this, { _, h, m ->
                 eH = h; eM = m
-                etEnd.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m))
+                tvEnd.text = String.format(Locale.getDefault(), "%02d:%02d", h, m)
             }, eH, eM, true).show()
         }
 
-        AlertDialog.Builder(this)
-            .setTitle(if (itemToEdit == null) "Tambah Aktivitas" else "Edit Aktivitas")
-            .setView(view)
-            .setPositiveButton("Simpan") { _, _ ->
-                val name = etName.text.toString().trim()
-                if (name.isEmpty() || etStart.text.isEmpty() || etEnd.text.isEmpty()) {
-                    Toast.makeText(this, "Semua data wajib diisi", Toast.LENGTH_SHORT).show()
-                } else {
-                    saveManualActivity(itemToEdit?.id, name, sH, sM, eH, eM)
-                }
+        tvKategori.setOnClickListener {
+            showPilihKategoriDialog { nama, resId, namaRes ->
+                kategoriAktif = nama
+                iconAktif = namaRes
+                selectedResId = resId
+                tvKategori.text = nama
+                tvKategori.setCompoundDrawablesWithIntrinsicBounds(resId, 0, 0, 0)
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
+
+        fun resetBeban() {
+            btnRingan.setCardBackgroundColor(Color.parseColor("#FFFFFF"))
+            btnSedang.setCardBackgroundColor(Color.parseColor("#FFFFFF"))
+            btnBerat.setCardBackgroundColor(Color.parseColor("#FFFFFF"))
+        }
+
+        btnRingan.setOnClickListener {
+            resetBeban(); btnRingan.setCardBackgroundColor(Color.parseColor("#E8F9EE")); tingkatBeban = "Ringan"
+        }
+        btnSedang.setOnClickListener {
+            resetBeban(); btnSedang.setCardBackgroundColor(Color.parseColor("#FFF9E6")); tingkatBeban = "Sedang"
+        }
+        btnBerat.setOnClickListener {
+            resetBeban(); btnBerat.setCardBackgroundColor(Color.parseColor("#FEF2F2")); tingkatBeban = "Berat"
+        }
+
+        btnRingan.performClick()
+
+        btnSimpan.setOnClickListener {
+            val name = etName.text.toString().trim()
+            if (name.isEmpty() || tvStart.text.toString().isEmpty() || tvEnd.text.toString().isEmpty()) {
+                Toast.makeText(this, "Semua data wajib diisi", Toast.LENGTH_SHORT).show()
+            } else {
+                saveManualActivity(itemToEdit?.id, name, sH, sM, eH, eM, tingkatBeban, kategoriAktif, iconAktif)
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
 
-    private fun saveManualActivity(docId: String?, name: String, sH: Int, sM: Int, eH: Int, eM: Int) {
+    private fun showPilihKategoriDialog(onSelected: (String, Int, String) -> Unit) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Pilih Kategori")
+
+        val adapter = object : ArrayAdapter<KategoriItem>(this, android.R.layout.select_dialog_item, android.R.id.text1, daftarKategori) {
+            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val tv = view.findViewById<TextView>(android.R.id.text1)
+                val item = getItem(position)
+                tv.text = item?.nama
+                tv.setCompoundDrawablesWithIntrinsicBounds(item?.iconResId ?: 0, 0, 0, 0)
+                tv.compoundDrawablePadding = 24
+                return view
+            }
+        }
+
+        builder.setAdapter(adapter) { dialog, which ->
+            val terpilih = daftarKategori[which]
+            onSelected(terpilih.nama, terpilih.iconResId, terpilih.iconName)
+        }
+
+        builder.setPositiveButton("+ Kategori Baru") { _, _ ->
+            showTambahKategoriBaruDialog(onSelected)
+        }
+
+        builder.show()
+    }
+
+    private fun showTambahKategoriBaruDialog(onSelected: (String, Int, String) -> Unit) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Buat Kategori Baru")
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 40, 50, 40)
+        }
+
+        val etNama = EditText(this).apply { hint = "Nama kategori..." }
+        layout.addView(etNama)
+
+        val tvLabel = TextView(this).apply {
+            text = "Pilih Ikon Vektor:"
+            setPadding(0, 32, 0, 16)
+        }
+        layout.addView(tvLabel)
+
+        val scrollView = HorizontalScrollView(this)
+        val iconContainer = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        scrollView.addView(iconContainer)
+
+        var selectedIcon = daftarIkonTersedia[0]
+        val iconViews = mutableListOf<ImageView>()
+
+        for (ikon in daftarIkonTersedia) {
+            val iv = ImageView(this).apply {
+                setImageResource(ikon.first)
+                setPadding(24, 24, 24, 24)
+                setBackgroundResource(android.R.drawable.list_selector_background)
+                layoutParams = LinearLayout.LayoutParams(160, 160).apply {
+                    setMargins(0, 0, 16, 0)
+                }
+            }
+            iv.setOnClickListener {
+                selectedIcon = ikon
+                iconViews.forEach { it.alpha = 0.3f }
+                iv.alpha = 1.0f
+            }
+            iconViews.add(iv)
+            iconContainer.addView(iv)
+        }
+        iconViews.forEach { it.alpha = 0.3f }
+        iconViews[0].alpha = 1.0f
+
+        layout.addView(scrollView)
+        builder.setView(layout)
+
+        builder.setPositiveButton("Simpan") { _, _ ->
+            val namaBaru = etNama.text.toString().trim()
+            if (namaBaru.isNotEmpty()) {
+                daftarKategori.add(KategoriItem(namaBaru, selectedIcon.first, selectedIcon.second))
+                onSelected(namaBaru, selectedIcon.first, selectedIcon.second)
+            } else {
+                Toast.makeText(this, "Nama kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
+            }
+        }
+        builder.setNegativeButton("Batal", null)
+        builder.show()
+    }
+
+    private fun saveManualActivity(docId: String?, name: String, sH: Int, sM: Int, eH: Int, eM: Int, weight: String, cat: String, icon: String) {
         val startTotalMin = sH * 60 + sM
         val endTotalMin = eH * 60 + eM
         var duration = endTotalMin - startTotalMin
@@ -235,7 +416,15 @@ class InputJadwalActivity : AppCompatActivity() {
         }
 
         val userId = auth.currentUser?.uid ?: return
-        val selectedDate = weekDays[selectedDayIndex].time
+
+        // AMBIL TANGGAL DARI CHIP YANG AKTIF DAN RESET JAMNYA KE 00:00:00
+        val selectedCal = (weekDays[selectedDayIndex].clone() as Calendar).apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val selectedDate = selectedCal.time
 
         val activityData = hashMapOf(
             "userId" to userId,
@@ -244,7 +433,10 @@ class InputJadwalActivity : AppCompatActivity() {
             "startTime" to String.format(Locale.getDefault(), "%02d:%02d", sH, sM),
             "endTime" to String.format(Locale.getDefault(), "%02d:%02d", eH, eM),
             "date" to Timestamp(selectedDate),
-            "source" to "manual"
+            "source" to "manual",
+            "cat" to cat,
+            "weight" to weight,
+            "icon" to icon
         )
 
         val collection = db.collection("activities")

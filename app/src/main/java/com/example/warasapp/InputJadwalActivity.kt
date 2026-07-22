@@ -35,8 +35,14 @@ class InputJadwalActivity : AppCompatActivity() {
 
     private val dayNameFormat = SimpleDateFormat("EEE", Locale("id", "ID"))
 
-    // Struktur Data untuk Kategori & Icon Vektor
-    private data class KategoriItem(val nama: String, val iconResId: Int, val iconName: String)
+    // ================== KATEGORI (persisten ke Firestore) ==================
+
+    private data class KategoriItem(
+        val id: String = "",       // docId Firestore. Kosong = belum tersimpan.
+        val nama: String,
+        val iconResId: Int,
+        val iconName: String
+    )
 
     private val daftarIkonTersedia = listOf(
         Pair(R.drawable.ic_jadwal, "ic_jadwal"),
@@ -47,18 +53,24 @@ class InputJadwalActivity : AppCompatActivity() {
         Pair(R.drawable.ic_sleepy, "ic_sleepy")
     )
 
-    private val daftarKategori = mutableListOf(
-        KategoriItem("Pekerjaan", R.drawable.ic_jadwal, "ic_jadwal"),
-        KategoriItem("Istirahat", R.drawable.ic_sleepy, "ic_sleepy"),
-        KategoriItem("Olahraga", R.drawable.ic_mission, "ic_mission")
-    )
+    // Mulai kosong -> diisi dari Firestore lewat loadKategoriFromFirestore()
+    private val daftarKategori = mutableListOf<KategoriItem>()
+
+    private val categoriesCollection get() = db.collection("categories")
+    private var kategoriSudahDimuat = false
+
+    // ==========================================================================
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_input_jadwal)
         BottomNavHelper.setup(this, "jadwal")
+
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
+
+        // Muat kategori lebih dulu supaya siap dipakai saat dialog dibuka
+        loadKategoriFromFirestore()
 
         dayChipContainer = findViewById(R.id.dayChipContainer)
         rvActivities = findViewById(R.id.rvActivities)
@@ -92,7 +104,6 @@ class InputJadwalActivity : AppCompatActivity() {
         val diffToMonday = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7
         cal.add(Calendar.DAY_OF_MONTH, -diffToMonday)
 
-        // Reset jam kalender minggu ke 00:00:00 agar bersih
         cal.set(Calendar.HOUR_OF_DAY, 0)
         cal.set(Calendar.MINUTE, 0)
         cal.set(Calendar.SECOND, 0)
@@ -103,7 +114,6 @@ class InputJadwalActivity : AppCompatActivity() {
             cal.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        // Ambil tanggal hari ini tanpa mempedulikan jam
         val today = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
@@ -183,6 +193,7 @@ class InputJadwalActivity : AppCompatActivity() {
                     val end = doc.getString("endTime") ?: doc.getString("end") ?: "--:--"
                     val icon = doc.getString("icon") ?: "ic_jadwal"
                     val weight = doc.getString("weight") ?: "Ringan"
+
                     activityList.add(
                         ActivityItem(
                             id = doc.id,
@@ -198,6 +209,8 @@ class InputJadwalActivity : AppCompatActivity() {
                 }
 
                 showEmptyState(activityList.isEmpty())
+                // Kirim salinan list, bukan referensi langsung -> mencegah adapter.updateData()
+                // ikut mengosongkan activityList kalau di dalamnya ada items.clear()
                 adapter.updateData(activityList.toList())
             }
             .addOnFailureListener { e ->
@@ -254,6 +267,18 @@ class InputJadwalActivity : AppCompatActivity() {
                 eH = endParts[0].toIntOrNull() ?: 10
                 eM = endParts[1].toIntOrNull() ?: 0
             }
+
+            // Isi form dengan kategori & beban yang tersimpan sebelumnya,
+            // bukan selalu reset ke default "Pekerjaan" / "Ringan"
+            iconAktif = itemToEdit.iconName
+            selectedResId = daftarIkonTersedia.firstOrNull { it.second == itemToEdit.iconName }?.first
+                ?: R.drawable.ic_jadwal
+            kategoriAktif = daftarKategori.firstOrNull { it.iconName == itemToEdit.iconName }?.nama
+                ?: kategoriAktif
+            tingkatBeban = itemToEdit.weight
+
+            tvKategori.text = kategoriAktif
+            tvKategori.setCompoundDrawablesWithIntrinsicBounds(selectedResId, 0, 0, 0)
         } else {
             tvStart.text = String.format(Locale.getDefault(), "%02d:%02d", sH, sM)
             tvEnd.text = String.format(Locale.getDefault(), "%02d:%02d", eH, eM)
@@ -291,6 +316,14 @@ class InputJadwalActivity : AppCompatActivity() {
             btnBerat.setCardBackgroundColor(Color.parseColor("#FFFFFF"))
         }
 
+        // Highlight kartu beban sesuai data (default "Ringan" kalau tambah baru)
+        resetBeban()
+        when (tingkatBeban) {
+            "Sedang" -> btnSedang.setCardBackgroundColor(Color.parseColor("#FFF9E6"))
+            "Berat" -> btnBerat.setCardBackgroundColor(Color.parseColor("#FEF2F2"))
+            else -> btnRingan.setCardBackgroundColor(Color.parseColor("#E8F9EE"))
+        }
+
         btnRingan.setOnClickListener {
             resetBeban(); btnRingan.setCardBackgroundColor(Color.parseColor("#E8F9EE")); tingkatBeban = "Ringan"
         }
@@ -300,8 +333,6 @@ class InputJadwalActivity : AppCompatActivity() {
         btnBerat.setOnClickListener {
             resetBeban(); btnBerat.setCardBackgroundColor(Color.parseColor("#FEF2F2")); tingkatBeban = "Berat"
         }
-
-        btnRingan.performClick()
 
         btnSimpan.setOnClickListener {
             val name = etName.text.toString().trim()
@@ -316,44 +347,161 @@ class InputJadwalActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showPilihKategoriDialog(onSelected: (String, Int, String) -> Unit) {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Pilih Kategori")
+    // ================== KATEGORI: dialog pilih, tambah, edit, hapus ==================
 
-        val adapter = object : ArrayAdapter<KategoriItem>(this, android.R.layout.select_dialog_item, android.R.id.text1, daftarKategori) {
-            override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
-                val view = super.getView(position, convertView, parent)
-                val tv = view.findViewById<TextView>(android.R.id.text1)
-                val item = getItem(position)
-                tv.text = item?.nama
-                tv.setCompoundDrawablesWithIntrinsicBounds(item?.iconResId ?: 0, 0, 0, 0)
-                tv.compoundDrawablePadding = 24
-                return view
+    private fun showPilihKategoriDialog(onSelected: (String, Int, String) -> Unit) {
+        if (!kategoriSudahDimuat && daftarKategori.isEmpty()) {
+            Toast.makeText(this, "Kategori masih dimuat, coba lagi sebentar", Toast.LENGTH_SHORT).show()
+            loadKategoriFromFirestore()
+            return
+        }
+
+        val dialog = AlertDialog.Builder(this).create()
+
+        val rootLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(40, 32, 40, 24)
+        }
+
+        val tvTitle = TextView(this).apply {
+            text = "Pilih Kategori"
+            textSize = 18f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(8, 0, 0, 24)
+        }
+        rootLayout.addView(tvTitle)
+
+        val rowContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        rootLayout.addView(rowContainer)
+
+        fun renderRows() {
+            rowContainer.removeAllViews()
+
+            daftarKategori.forEachIndexed { index, kategori ->
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = android.view.Gravity.CENTER_VERTICAL
+                    setPadding(8, 24, 8, 24)
+                    isClickable = true
+                    isFocusable = true
+                    setBackgroundResource(android.R.drawable.list_selector_background)
+                }
+
+                val icon = ImageView(this).apply {
+                    setImageResource(kategori.iconResId)
+                    layoutParams = LinearLayout.LayoutParams(72, 72).apply {
+                        marginEnd = 28
+                    }
+                }
+                row.addView(icon)
+
+                val tvNama = TextView(this).apply {
+                    text = kategori.nama
+                    textSize = 15f
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                }
+                row.addView(tvNama)
+
+                val btnEdit = TextView(this).apply {
+                    text = "✏️"
+                    textSize = 16f
+                    setPadding(20, 12, 20, 12)
+                    setOnClickListener {
+                        showKategoriFormDialog(existing = kategori) { nama, resId, iconName ->
+                            updateKategoriInFirestore(kategori.id, nama, resId, iconName) { updated ->
+                                daftarKategori[index] = updated
+                                renderRows()
+                            }
+                        }
+                    }
+                }
+                row.addView(btnEdit)
+
+                val btnDelete = TextView(this).apply {
+                    text = "🗑️"
+                    textSize = 16f
+                    setPadding(20, 12, 20, 12)
+                    setOnClickListener {
+                        if (daftarKategori.size <= 1) {
+                            Toast.makeText(this@InputJadwalActivity, "Minimal harus ada 1 kategori", Toast.LENGTH_SHORT).show()
+                        } else {
+                            AlertDialog.Builder(this@InputJadwalActivity)
+                                .setTitle("Hapus Kategori")
+                                .setMessage("Yakin ingin menghapus kategori \"${kategori.nama}\"?")
+                                .setPositiveButton("Hapus") { _, _ ->
+                                    deleteKategoriFromFirestore(kategori.id) {
+                                        daftarKategori.removeAt(index)
+                                        renderRows()
+                                    }
+                                }
+                                .setNegativeButton("Batal", null)
+                                .show()
+                        }
+                    }
+                }
+                row.addView(btnDelete)
+
+                row.setOnClickListener {
+                    onSelected(kategori.nama, kategori.iconResId, kategori.iconName)
+                    dialog.dismiss()
+                }
+
+                rowContainer.addView(row)
+
+                rowContainer.addView(View(this).apply {
+                    layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2)
+                    setBackgroundColor(Color.parseColor("#F0F0F0"))
+                })
             }
         }
 
-        builder.setAdapter(adapter) { dialog, which ->
-            val terpilih = daftarKategori[which]
-            onSelected(terpilih.nama, terpilih.iconResId, terpilih.iconName)
-        }
+        renderRows()
 
-        builder.setPositiveButton("+ Kategori Baru") { _, _ ->
-            showTambahKategoriBaruDialog(onSelected)
+        val btnTambah = TextView(this).apply {
+            text = "+ Kategori Baru"
+            textSize = 14f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setTextColor(Color.parseColor("#5B8DEF"))
+            setPadding(8, 32, 8, 8)
+            setOnClickListener {
+                showKategoriFormDialog(existing = null) { nama, resId, iconName ->
+                    saveNewKategoriToFirestore(nama, resId, iconName) { baru ->
+                        daftarKategori.add(baru)
+                        renderRows()
+                    }
+                }
+            }
         }
+        rootLayout.addView(btnTambah)
 
-        builder.show()
+        dialog.setView(rootLayout)
+        dialog.show()
     }
 
-    private fun showTambahKategoriBaruDialog(onSelected: (String, Int, String) -> Unit) {
+    /**
+     * Form tambah ATAU edit kategori, tergantung parameter `existing`.
+     * existing == null -> mode tambah baru
+     * existing != null -> mode edit (form terisi otomatis dari data lama)
+     *
+     * Callback mengirim data mentah (nama, resId, iconName), BUKAN KategoriItem final,
+     * karena pemanggil (add/edit) yang menentukan kapan Firestore call dijalankan dan
+     * baru membuat KategoriItem setelah docId dari server didapat.
+     */
+    private fun showKategoriFormDialog(existing: KategoriItem?, onSaved: (nama: String, resId: Int, iconName: String) -> Unit) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Buat Kategori Baru")
+        builder.setTitle(if (existing == null) "Buat Kategori Baru" else "Edit Kategori")
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(50, 40, 50, 40)
         }
 
-        val etNama = EditText(this).apply { hint = "Nama kategori..." }
+        val etNama = EditText(this).apply {
+            hint = "Nama kategori..."
+            setText(existing?.nama ?: "")
+        }
         layout.addView(etNama)
 
         val tvLabel = TextView(this).apply {
@@ -366,7 +514,10 @@ class InputJadwalActivity : AppCompatActivity() {
         val iconContainer = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         scrollView.addView(iconContainer)
 
-        var selectedIcon = daftarIkonTersedia[0]
+        var selectedIcon = existing?.let { ex ->
+            daftarIkonTersedia.firstOrNull { it.second == ex.iconName }
+        } ?: daftarIkonTersedia[0]
+
         val iconViews = mutableListOf<ImageView>()
 
         for (ikon in daftarIkonTersedia) {
@@ -387,16 +538,16 @@ class InputJadwalActivity : AppCompatActivity() {
             iconContainer.addView(iv)
         }
         iconViews.forEach { it.alpha = 0.3f }
-        iconViews[0].alpha = 1.0f
+        val activeIndex = daftarIkonTersedia.indexOfFirst { it.second == selectedIcon.second }
+        iconViews.getOrNull(if (activeIndex >= 0) activeIndex else 0)?.alpha = 1.0f
 
         layout.addView(scrollView)
         builder.setView(layout)
 
         builder.setPositiveButton("Simpan") { _, _ ->
-            val namaBaru = etNama.text.toString().trim()
-            if (namaBaru.isNotEmpty()) {
-                daftarKategori.add(KategoriItem(namaBaru, selectedIcon.first, selectedIcon.second))
-                onSelected(namaBaru, selectedIcon.first, selectedIcon.second)
+            val nama = etNama.text.toString().trim()
+            if (nama.isNotEmpty()) {
+                onSaved(nama, selectedIcon.first, selectedIcon.second)
             } else {
                 Toast.makeText(this, "Nama kategori tidak boleh kosong", Toast.LENGTH_SHORT).show()
             }
@@ -404,6 +555,98 @@ class InputJadwalActivity : AppCompatActivity() {
         builder.setNegativeButton("Batal", null)
         builder.show()
     }
+
+    // ================== KATEGORI: fungsi Firestore (CRUD) ==================
+
+    private fun loadKategoriFromFirestore() {
+        val userId = auth.currentUser?.uid ?: return
+
+        categoriesCollection
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                daftarKategori.clear()
+
+                if (snapshot.isEmpty) {
+                    // User baru -> seed kategori default ke Firestore satu kali
+                    seedDefaultCategories(userId)
+                } else {
+                    for (doc in snapshot.documents) {
+                        val nama = doc.getString("nama") ?: continue
+                        val iconName = doc.getString("iconName") ?: "ic_jadwal"
+                        val iconResId = daftarIkonTersedia.firstOrNull { it.second == iconName }?.first
+                            ?: R.drawable.ic_jadwal
+                        daftarKategori.add(KategoriItem(doc.id, nama, iconResId, iconName))
+                    }
+                    kategoriSudahDimuat = true
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal memuat kategori: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun seedDefaultCategories(userId: String) {
+        val defaults = listOf(
+            Triple("Pekerjaan", R.drawable.ic_jadwal, "ic_jadwal"),
+            Triple("Istirahat", R.drawable.ic_sleepy, "ic_sleepy"),
+            Triple("Olahraga", R.drawable.ic_mission, "ic_mission")
+        )
+
+        defaults.forEach { (nama, resId, iconName) ->
+            val data = hashMapOf(
+                "userId" to userId,
+                "nama" to nama,
+                "iconName" to iconName,
+                "timestamp" to Timestamp.now()
+            )
+            categoriesCollection.add(data)
+                .addOnSuccessListener { docRef ->
+                    daftarKategori.add(KategoriItem(docRef.id, nama, resId, iconName))
+                    kategoriSudahDimuat = true
+                }
+        }
+    }
+
+    private fun saveNewKategoriToFirestore(nama: String, iconResId: Int, iconName: String, onSaved: (KategoriItem) -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        val data = hashMapOf(
+            "userId" to userId,
+            "nama" to nama,
+            "iconName" to iconName,
+            "timestamp" to Timestamp.now()
+        )
+        categoriesCollection.add(data)
+            .addOnSuccessListener { docRef ->
+                onSaved(KategoriItem(docRef.id, nama, iconResId, iconName))
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal menyimpan kategori: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun updateKategoriInFirestore(docId: String, nama: String, iconResId: Int, iconName: String, onUpdated: (KategoriItem) -> Unit) {
+        if (docId.isEmpty()) return
+        categoriesCollection.document(docId)
+            .update(mapOf("nama" to nama, "iconName" to iconName))
+            .addOnSuccessListener {
+                onUpdated(KategoriItem(docId, nama, iconResId, iconName))
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal mengubah kategori: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun deleteKategoriFromFirestore(docId: String, onDeleted: () -> Unit) {
+        if (docId.isEmpty()) return
+        categoriesCollection.document(docId).delete()
+            .addOnSuccessListener { onDeleted() }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Gagal menghapus kategori: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // ================== AKTIVITAS: simpan & hapus ==================
 
     private fun saveManualActivity(docId: String?, name: String, sH: Int, sM: Int, eH: Int, eM: Int, weight: String, cat: String, icon: String) {
         val startTotalMin = sH * 60 + sM
@@ -417,7 +660,6 @@ class InputJadwalActivity : AppCompatActivity() {
 
         val userId = auth.currentUser?.uid ?: return
 
-        // AMBIL TANGGAL DARI CHIP YANG AKTIF DAN RESET JAMNYA KE 00:00:00
         val selectedCal = (weekDays[selectedDayIndex].clone() as Calendar).apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)

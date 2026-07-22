@@ -51,7 +51,7 @@
                             android:id="@+id/tvUserName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ni Putu Rani"
+                            android:text="Pengguna"
                             android:textColor="#1A1A2E"
                             android:textSize="22sp"
                             android:textStyle="bold" />

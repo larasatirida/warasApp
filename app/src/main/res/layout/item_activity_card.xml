@@ -35,8 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="12dp"
-                android:src="@drawable/ic_jadwal"
-                app:tint="#4A5568" />
+                android:src="@drawable/ic_jadwal" />
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Informasi Utama (Nama, Sumber/GCal, Waktu, & Badge Beban) -->

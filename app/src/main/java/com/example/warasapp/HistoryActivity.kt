@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -324,10 +325,46 @@ class HistoryActivity : AppCompatActivity() {
         tvNote.text = if (note.isNotBlank()) "\"$note\"" else ""
         tvNote.visibility = if (note.isNotBlank()) View.VISIBLE else View.GONE
 
-        // Tap item riwayat untuk mengedit entri ini
+        // Tap item riwayat -> munculin pilihan Edit / Hapus
         view.setOnClickListener {
-            startEditingEntry(docId, mood, symptoms, note)
+            showEditDeleteOptions(docId, mood, symptoms, note)
         }
+    }
+
+    private fun showEditDeleteOptions(docId: String, mood: Int, symptoms: List<String>, note: String) {
+        val options = arrayOf("Edit", "Hapus")
+        AlertDialog.Builder(this)
+            .setTitle("Riwayat Check-in")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> startEditingEntry(docId, mood, symptoms, note)
+                    1 -> confirmDeleteEntry(docId)
+                }
+            }
+            .show()
+    }
+
+    private fun confirmDeleteEntry(docId: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Hapus Riwayat")
+            .setMessage("Yakin ingin menghapus entri check-in ini? Tindakan ini tidak bisa dibatalkan.")
+            .setPositiveButton("Hapus") { _, _ ->
+                db.collection("mood_logs").document(docId)
+                    .delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Riwayat berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        // Kalau entri yang lagi diedit adalah yang barusan dihapus, keluar dari mode edit
+                        if (editingDocId == docId) {
+                            resetFormToNewEntry()
+                        }
+                        loadHistory()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Gagal menghapus: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

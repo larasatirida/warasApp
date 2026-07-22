@@ -20,6 +20,8 @@ import android.app.NotificationManager
 import androidx.appcompat.app.AlertDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.example.warasapp.logic.MoodLogRepository
+import com.example.warasapp.logic.MissionType
+import androidx.work.workDataOf
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,7 +40,11 @@ class MainActivity : AppCompatActivity() {
         // Jalankan Penjadwalan Rutin di Jam Spesifik
         scheduleDailyNotifications()
         triggerMoodNotificationNow()
+        triggerMissionNotificationNow()
         scheduleMissionCheck()
+        scheduleBurnoutAlertCheck()
+        scheduleMissionReminders()
+        scheduleQuoteNotification()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -117,6 +123,13 @@ class MainActivity : AppCompatActivity() {
                 .build()
             WorkManager.getInstance(this).enqueue(exitAppRequest)
         }
+
+        if (!NotifPrefsHelper.isAnsweredToday(this, "mission_shown")) {
+            val missionTestRequest = OneTimeWorkRequestBuilder<MissionCheckWorker>()
+                .setInitialDelay(30, TimeUnit.SECONDS)
+                .build()
+            WorkManager.getInstance(this).enqueue(missionTestRequest)
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -135,10 +148,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun triggerMoodNotificationNow() {
+        if (NotifPrefsHelper.isPending(this, "mood") || NotifPrefsHelper.isAnsweredToday(this, "mood")) {
+            return
+        }
         val request = OneTimeWorkRequestBuilder<MoodCheckInWorker>()
             .setInitialDelay(15, TimeUnit.SECONDS)
             .build()
+        WorkManager.getInstance(this).enqueue(request)
+    }
 
+    private fun triggerMissionNotificationNow() {
+        if (NotifPrefsHelper.isAnsweredToday(this, "mission_shown")) {
+            return
+        }
+        val request = OneTimeWorkRequestBuilder<MissionCheckWorker>()
+            .setInitialDelay(30, TimeUnit.SECONDS)
+            .build()
         WorkManager.getInstance(this).enqueue(request)
     }
 
@@ -189,5 +214,43 @@ class MainActivity : AppCompatActivity() {
         }
 
         return dueDate.timeInMillis - currentDate.timeInMillis
+    }
+
+    private fun scheduleBurnoutAlertCheck() {
+        val request = PeriodicWorkRequestBuilder<BurnoutAlertWorker>(24, TimeUnit.HOURS)
+            .build()
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork("burnout_alert_check", ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    private fun scheduleMissionReminders() {
+        val workManager = WorkManager.getInstance(this)
+
+        val schedule = listOf(
+            Triple("SleepMorning6", MissionType.SLEEP.key, Pair(6, 0)),
+            Triple("SleepMorning9", MissionType.SLEEP.key, Pair(9, 0)),
+            Triple("Overtime6PM", MissionType.NO_OVERTIME.key, Pair(18, 0)),
+            Triple("Overtime9PM", MissionType.NO_OVERTIME.key, Pair(21, 0)),
+            Triple("Exercise4PM", MissionType.EXERCISE.key, Pair(16, 0)),
+            Triple("Exercise7PM", MissionType.EXERCISE.key, Pair(19, 0))
+        )
+
+        schedule.forEach { (workName, typeKey, time) ->
+            val delay = calculateDelay(time.first, time.second)
+            val request = PeriodicWorkRequestBuilder<MissionNotifWorker>(24, TimeUnit.HOURS)
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(workDataOf("missionTypeKey" to typeKey))
+                .build()
+            workManager.enqueueUniquePeriodicWork(workName, ExistingPeriodicWorkPolicy.KEEP, request)
+        }
+    }
+
+    private fun scheduleQuoteNotification() {
+        val delay = calculateDelay(12, 0)
+        val request = PeriodicWorkRequestBuilder<QuoteNotifWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork("QuoteNoon", ExistingPeriodicWorkPolicy.KEEP, request)
     }
 }

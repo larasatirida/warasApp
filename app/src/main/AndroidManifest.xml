@@ -59,6 +59,8 @@
             android:name=".ProfileActivity"
             android:exported="false" />
 
+        <receiver android:name=".MissionActionReceiver" android:exported="false" />
+
     </application>
 
 </manifest>

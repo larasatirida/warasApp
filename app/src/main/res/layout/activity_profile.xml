@@ -230,7 +230,7 @@
                         android:layout_marginBottom="16dp">
                         <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Peringatan burnout tinggi" android:textColor="#1A1A2E" android:textStyle="bold" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Skor > 75" android:textColor="#999999" android:textSize="12sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Skor > 67" android:textColor="#999999" android:textSize="12sp" />
                         </LinearLayout>
                         <androidx.appcompat.widget.SwitchCompat android:id="@+id/switchBurnoutAlert" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:checked="true" />
                     </RelativeLayout>

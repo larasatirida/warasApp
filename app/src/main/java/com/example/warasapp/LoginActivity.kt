@@ -1,15 +1,20 @@
 package com.example.warasapp
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -49,6 +54,9 @@ class LoginActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         requestNotificationPermission()
+        if (!hasAskedBatteryOptimizationBefore()) {
+            requestIgnoreBatteryOptimization()
+        }
 
 
         if (auth.currentUser != null) {
@@ -156,6 +164,42 @@ class LoginActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        val powerManager = getSystemService(PowerManager::class.java)
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    private fun requestIgnoreBatteryOptimization() {
+        if (isIgnoringBatteryOptimizations()) return
+
+        AlertDialog.Builder(this)
+            .setTitle("Izinkan pengingat tepat waktu")
+            .setMessage("Supaya notifikasi check-in muncul tepat waktu meskipun app tidak dibuka, aktifkan opsi 'Unrestricted' battery di halaman berikutnya.")
+            .setCancelable(false)
+            .setPositiveButton("Aktifkan") { _, _ ->
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+                markAskedBatteryOptimization()
+            }
+            .setNegativeButton("Nanti saja") { _, _ ->
+                markAskedBatteryOptimization()
+            }
+            .show()
+    }
+
+    private fun hasAskedBatteryOptimizationBefore(): Boolean {
+        val prefs = getSharedPreferences("app_onetime_prefs", Context.MODE_PRIVATE)
+        return prefs.getBoolean("has_asked_battery_optimization", false)
+    }
+
+    private fun markAskedBatteryOptimization() {
+        val prefs = getSharedPreferences("app_onetime_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("has_asked_battery_optimization", true).apply()
     }
 
 }

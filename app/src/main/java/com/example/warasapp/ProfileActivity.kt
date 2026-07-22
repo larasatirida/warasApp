@@ -3,6 +3,7 @@ package com.example.warasapp
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import androidx.appcompat.widget.SwitchCompat
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -28,6 +29,7 @@ class ProfileActivity : AppCompatActivity() {
         setupUserInfo()
         loadStats()
         setupLogout()
+        setupNotifToggles()
     }
 
     private fun showEditNameDialog(tvProfileName: TextView) {
@@ -129,6 +131,26 @@ class ProfileActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Toast.makeText(this@ProfileActivity, "Gagal memuat statistik", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun setupNotifToggles() {
+        val switchCheckin: SwitchCompat = findViewById(R.id.switchCheckin)
+        val switchBurnoutAlert: SwitchCompat = findViewById(R.id.switchBurnoutAlert)
+        val switchMission: SwitchCompat = findViewById(R.id.switchMission)
+
+        switchCheckin.isChecked = NotifPrefsHelper.isNotifEnabled(this, "checkin_harian")
+        switchBurnoutAlert.isChecked = NotifPrefsHelper.isNotifEnabled(this, "burnout_alert")
+        switchMission.isChecked = NotifPrefsHelper.isNotifEnabled(this, "pengingat_mission")
+
+        switchCheckin.setOnCheckedChangeListener { _, isChecked ->
+            NotifPrefsHelper.setNotifEnabled(this, "checkin_harian", isChecked)
+        }
+        switchBurnoutAlert.setOnCheckedChangeListener { _, isChecked ->
+            NotifPrefsHelper.setNotifEnabled(this, "burnout_alert", isChecked)
+        }
+        switchMission.setOnCheckedChangeListener { _, isChecked ->
+            NotifPrefsHelper.setNotifEnabled(this, "pengingat_mission", isChecked)
         }
     }
 
